@@ -7,11 +7,13 @@ import { MarketCarousel } from "@/components/MarketCarousel";
 import { TradePanel } from "@/components/TradePanel";
 import { TradeResultToast } from "@/components/TradeResultToast";
 import { SuccessConfetti } from "@/components/SuccessConfetti";
+import { CoolingOffModal } from "@/components/CoolingOffModal";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { FeedSkeleton } from "@/components/FeedSkeleton";
 import { useAuth } from "@/providers/AuthProvider";
 import { useOnboarding } from "@/hooks/useOnboarding";
+import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
@@ -25,12 +27,17 @@ export default function HomePage() {
   const router = useRouter();
   const { isAuthenticated, isLoading, getAuthToken } = useAuth();
   const { isOnboardingComplete } = useOnboarding();
+  const {
+    consecutiveLosses,
+    shouldShowCooling,
+    recordTradeResult,
+    dismissCooling,
+  } = useCoolingOff();
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Redirect authenticated but un-onboarded users to onboarding
   useEffect(() => {
     if (isAuthenticated && !isOnboardingComplete) {
       router.replace("/onboarding");
@@ -70,7 +77,7 @@ export default function HomePage() {
         const response = await executeTrade(tradeData, token);
 
         if (response.error && !response.data) {
-          setTradeResult({
+          const failResult: TradeResult = {
             success: false,
             market_id: tradeData.marketId,
             intent: tradeData.intent,
@@ -78,9 +85,12 @@ export default function HomePage() {
             executed_price: null,
             fee: null,
             error: response.error,
-          });
+          };
+          setTradeResult(failResult);
+          recordTradeResult(false);
         } else if (response.data) {
           setTradeResult(response.data);
+          recordTradeResult(response.data.success);
           if (response.data.success) {
             setShowConfetti(true);
           }
@@ -95,12 +105,13 @@ export default function HomePage() {
           fee: null,
           error: "Network error. Please check your connection.",
         });
+        recordTradeResult(false);
       } finally {
         setIsSubmitting(false);
         setTrade(null);
       }
     },
-    [getAuthToken],
+    [getAuthToken, recordTradeResult],
   );
 
   return (
@@ -170,6 +181,17 @@ export default function HomePage() {
       <SuccessConfetti
         active={showConfetti}
         onComplete={() => setShowConfetti(false)}
+      />
+
+      {/* Cooling-off modal */}
+      <CoolingOffModal
+        visible={shouldShowCooling}
+        consecutiveLosses={consecutiveLosses}
+        onDismiss={dismissCooling}
+        onTakeBreak={() => {
+          dismissCooling();
+          router.push("/");
+        }}
       />
     </div>
   );
