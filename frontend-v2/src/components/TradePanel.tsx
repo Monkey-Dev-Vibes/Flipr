@@ -2,15 +2,10 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Market, MarketOdds, TradeConfirmation } from "@/lib/types";
+import type { Market, MarketOdds, SlippageInfo, TradeConfirmation } from "@/lib/types";
 import { AnimatedOdds } from "./AnimatedOdds";
 import { BetSizeSlider } from "./BetSizeSlider";
 import { SwipeUpToTrade } from "./SwipeUpToTrade";
-
-interface SlippageInfo {
-  originalOdds: number;
-  currentOdds: number;
-}
 
 interface TradePanelProps {
   market: Market;
@@ -221,5 +216,3 @@ export function TradePanel({
     </>
   );
 }
-
-export type { SlippageInfo };

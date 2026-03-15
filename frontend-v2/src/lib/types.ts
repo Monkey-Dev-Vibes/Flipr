@@ -61,3 +61,8 @@ export interface UserState {
   consecutiveLosses: number;
   totalTrades: number;
 }
+
+export interface SlippageInfo {
+  originalOdds: number;
+  currentOdds: number;
+}
