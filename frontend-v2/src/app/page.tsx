@@ -15,8 +15,8 @@ import { useAuth } from "@/providers/AuthProvider";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useOddsWebSocket } from "@/hooks/useOddsWebSocket";
+import { useMarketFeed } from "@/hooks/useMarketFeed";
 import { executeTrade } from "@/lib/api";
-import { mockMarkets } from "@/lib/mock-markets";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
 
 interface TradeState {
@@ -34,6 +34,7 @@ export default function HomePage() {
     recordTradeResult,
     dismissCooling,
   } = useCoolingOff();
+  const { markets, isLoading: isFeedLoading } = useMarketFeed(getAuthToken);
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
@@ -142,7 +143,7 @@ export default function HomePage() {
 
       {/* Main content */}
       <main className="flex flex-1 flex-col items-center justify-center pt-16">
-        {isLoading ? (
+        {isLoading || isFeedLoading ? (
           <FeedSkeleton />
         ) : !isAuthenticated ? (
           <div className="flex flex-col items-center gap-6 px-6">
@@ -165,7 +166,7 @@ export default function HomePage() {
           <FeedSkeleton />
         ) : (
           <div className="w-full py-4">
-            <MarketCarousel markets={mockMarkets} onSelect={handleSelect} />
+            <MarketCarousel markets={markets} onSelect={handleSelect} />
           </div>
         )}
       </main>
