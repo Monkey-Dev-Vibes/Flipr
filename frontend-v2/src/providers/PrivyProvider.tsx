@@ -17,7 +17,7 @@ export function PrivyProvider({ children }: { children: React.ReactNode }) {
       config={{
         appearance: {
           theme: "dark",
-          accentColor: "#84B500",
+          accentColor: "#8AE600",
           logo: undefined,
         },
         loginMethods: ["apple", "google", "email"],

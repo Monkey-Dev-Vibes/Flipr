@@ -34,7 +34,7 @@ export function MarketCard({
         </div>
 
         {/* Question */}
-        <h2 className="font-serif text-2xl font-bold leading-tight text-flipr-ink">
+        <h2 className="font-display text-2xl font-bold leading-tight text-flipr-ink">
           {market.question}
         </h2>
 

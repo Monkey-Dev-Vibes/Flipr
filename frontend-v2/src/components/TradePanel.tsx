@@ -100,7 +100,7 @@ export function TradePanel({
                   {market.category}
                 </span>
               </div>
-              <h3 className="font-serif text-lg font-bold leading-tight text-flipr-ink">
+              <h3 className="font-display text-lg font-bold leading-tight text-flipr-ink">
                 {market.question}
               </h3>
             </div>

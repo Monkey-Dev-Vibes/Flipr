@@ -8,6 +8,8 @@ import { TradePanel } from "@/components/TradePanel";
 import { TradeResultToast } from "@/components/TradeResultToast";
 import { SuccessConfetti } from "@/components/SuccessConfetti";
 import { CoolingOffModal } from "@/components/CoolingOffModal";
+import { WinStreakBadge } from "@/components/WinStreakBadge";
+import { MilestoneOverlay } from "@/components/MilestoneOverlay";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { FeedSkeleton } from "@/components/FeedSkeleton";
@@ -17,6 +19,9 @@ import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useOddsWebSocket } from "@/hooks/useOddsWebSocket";
 import { useMarketFeed } from "@/hooks/useMarketFeed";
 import { useUserState } from "@/hooks/useUserState";
+import { useWinStreak } from "@/hooks/useWinStreak";
+import { useSoundEffects } from "@/hooks/useSoundEffects";
+import { useMilestones } from "@/hooks/useMilestones";
 import { executeTrade } from "@/lib/api";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
 
@@ -37,6 +42,14 @@ export default function HomePage() {
   } = useCoolingOff();
   const { markets, isLoading: isFeedLoading } = useMarketFeed(getAuthToken);
   const { userState, refetch: refetchUserState } = useUserState(getAuthToken);
+  const { currentStreak, glowClass, recordWin, recordLoss } = useWinStreak();
+  const { playWin, playLoss } = useSoundEffects();
+  const {
+    activeMilestone,
+    milestoneInfo,
+    recordTrade: recordMilestone,
+    dismissMilestone,
+  } = useMilestones();
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
@@ -109,11 +122,20 @@ export default function HomePage() {
           };
           setTradeResult(failResult);
           recordTradeResult(false);
+          recordLoss();
+          playLoss();
         } else if (response.data) {
           setTradeResult(response.data);
           recordTradeResult(response.data.success);
           if (response.data.success) {
             setShowConfetti(true);
+            recordWin();
+            playWin();
+            // Record milestone with estimated profit (simplified: amount * 0.1)
+            recordMilestone(response.data.amount * 0.1);
+          } else {
+            recordLoss();
+            playLoss();
           }
         }
       } catch {
@@ -127,20 +149,25 @@ export default function HomePage() {
           error: "Network error. Please check your connection.",
         });
         recordTradeResult(false);
+        recordLoss();
+        playLoss();
       } finally {
         setIsSubmitting(false);
         setTrade(null);
         refetchUserState();
       }
     },
-    [getAuthToken, recordTradeResult, refetchUserState],
+    [getAuthToken, recordTradeResult, refetchUserState, recordWin, recordLoss, playWin, playLoss, recordMilestone],
   );
 
   return (
     <div className="flex min-h-dvh w-full max-w-lg mx-auto flex-col overflow-locked bg-flipr-dark">
       {/* Header bar */}
       <header className="fixed left-0 right-0 top-0 z-40 mx-auto flex max-w-lg items-center justify-between border-b border-flipr-yes/10 px-5 pb-2 pt-safe-top">
-        <h1 className="font-serif text-xl font-bold text-flipr-card">flipr</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="font-display text-xl font-bold text-flipr-card">flipr</h1>
+          <WinStreakBadge streak={currentStreak} glowClass={glowClass} />
+        </div>
         {isAuthenticated ? <UserMenu /> : <LoginButton />}
       </header>
 
@@ -150,7 +177,7 @@ export default function HomePage() {
           <FeedSkeleton />
         ) : !isAuthenticated ? (
           <div className="flex flex-col items-center gap-6 px-6">
-            <h2 className="font-serif text-3xl font-bold text-flipr-card">
+            <h2 className="font-display text-3xl font-bold text-flipr-card">
               flipr
             </h2>
             <p className="max-w-xs text-center font-sans text-sm text-flipr-card/50">
@@ -207,6 +234,16 @@ export default function HomePage() {
         active={showConfetti}
         onComplete={() => setShowConfetti(false)}
       />
+
+      {/* Milestone celebration overlay */}
+      {milestoneInfo && (
+        <MilestoneOverlay
+          emoji={milestoneInfo.emoji}
+          label={milestoneInfo.label}
+          visible={!!activeMilestone}
+          onDismiss={dismissMilestone}
+        />
+      )}
 
       {/* Cooling-off modal */}
       <CoolingOffModal

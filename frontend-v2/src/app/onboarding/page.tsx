@@ -68,7 +68,7 @@ export default function OnboardingPage() {
               className="flex flex-1 flex-col items-center justify-center px-6"
             >
               <motion.h1
-                className="mb-2 font-serif text-5xl font-black text-flipr-card"
+                className="mb-2 font-display text-5xl font-black text-flipr-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}

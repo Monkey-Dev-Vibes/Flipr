@@ -8,13 +8,14 @@ import { MarketCard } from "./MarketCard";
 interface MarketCarouselProps {
   markets: Market[];
   onSelect: (market: Market, intent: "yes" | "no") => void;
+  volatileMarketIds?: Set<string>;
 }
 
 /**
  * Horizontal scroll-snap carousel of MarketCards.
  * Each card snaps to center. Pagination dots show the active index.
  */
-export function MarketCarousel({ markets, onSelect }: MarketCarouselProps) {
+export function MarketCarousel({ markets, onSelect, volatileMarketIds }: MarketCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -62,15 +63,19 @@ export function MarketCarousel({ markets, onSelect }: MarketCarouselProps) {
           scrollbarWidth: "none",
         }}
       >
-        {markets.map((market) => (
-          <div
-            key={market.id}
-            className="w-[85vw] max-w-[360px] flex-shrink-0 snap-center"
-            style={{ height: "min(520px, 68dvh)" }}
-          >
-            <MarketCard market={market} onSelect={onSelect} />
-          </div>
-        ))}
+        {markets.map((market, i) => {
+          const isActive = i === activeIndex;
+          const isVolatile = volatileMarketIds?.has(market.id);
+          return (
+            <div
+              key={market.id}
+              className={`w-[85vw] max-w-[360px] flex-shrink-0 snap-center ${isActive ? "card-glow" : ""} ${isVolatile ? "card-sparkle" : ""}`}
+              style={{ height: "min(520px, 68dvh)" }}
+            >
+              <MarketCard market={market} onSelect={onSelect} />
+            </div>
+          );
+        })}
       </div>
 
       {/* Pagination dots */}

@@ -54,7 +54,7 @@ export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
             exit={{ opacity: 0, y: -20 }}
             className="flex flex-col items-center gap-6"
           >
-            <h2 className="font-serif text-3xl font-bold text-flipr-card">
+            <h2 className="font-display text-3xl font-bold text-flipr-card">
               How it works
             </h2>
             <p className="max-w-xs text-center font-sans text-sm text-flipr-card/60">
@@ -149,7 +149,7 @@ export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
                 />
               </svg>
             </motion.div>
-            <h2 className="font-serif text-2xl font-bold text-flipr-card">
+            <h2 className="font-display text-2xl font-bold text-flipr-card">
               You&apos;re ready!
             </h2>
             <p className="font-mono text-sm text-flipr-yes">

@@ -9,7 +9,7 @@ export default function NotFound() {
         </span>
       </div>
 
-      <h1 className="font-serif text-3xl font-bold text-flipr-card">
+      <h1 className="font-display text-3xl font-bold text-flipr-card">
         Page not found
       </h1>
       <p className="mt-3 max-w-xs font-sans text-sm text-flipr-card/50">

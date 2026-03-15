@@ -11,7 +11,7 @@ interface Particle {
   rotation: number;
 }
 
-const COLORS = ["#84B500", "#a3d400", "#FFD700", "#FFFFFF"];
+const COLORS = ["#8AE600", "#A3FF1A", "#FFD700", "#FFFFFF"];
 const PARTICLE_COUNT = 12;
 const DURATION_MS = 1200;
 

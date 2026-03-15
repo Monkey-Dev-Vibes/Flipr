@@ -133,6 +133,42 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 
 ---
 
+## Sprint 11: Design Refresh & Dopamine System
+
+**Goal**: Vibrant new color palette, readable brand font, and a full dopamine reward system.
+
+**Design Refresh:**
+- [ ] Update color palette: `#84B500` → `#8AE600` (electric lime), gradient endpoints `#6BB300` → `#A3FF1A`
+- [ ] Swap heading font: Playfair Display → Space Grotesk (geometric, readable)
+- [ ] Add radial accent glow behind active carousel card
+- [ ] Update all gradient classes, flash animations, confetti colors
+
+**Dopamine System:**
+- [ ] Win Streak Counter — fire badge in header (`🔥 x3`), escalating glow
+- [ ] Profit Pulse — portfolio balance scale-up bounce + slot-machine counting animation
+- [ ] Sound Effects — Web Audio API: "cha-ching" on win, soft thud on loss, tick on swipe
+- [ ] Haptic Ramp — vibration intensity increases during swipe-up gesture
+- [ ] Milestone Celebrations — special overlays for first trade, 10th trade, $100 profit
+- [ ] Odds Volatility Sparkle — card border glows when odds shift >3%
+- [ ] Tests for all new features
+
+---
+
+## Sprint 12: Social Share Cards
+
+**Goal**: Shareable trade/portfolio cards for X (Twitter) and all social media, driving viral growth.
+
+- [ ] Build `ShareCardCanvas.tsx` — HTML Canvas renderer for branded share images
+- [ ] Build `useShareCard.ts` — Web Share API integration with image + link
+- [ ] Backend: `GET /share/:id` endpoint with OG meta tags for Twitter Card previews
+- [ ] Backend: `POST /share` endpoint to create shareable snapshots
+- [ ] Share card design: brand gradient, % gain, market question, "Join Flipr" CTA
+- [ ] PWA deep link handling for shared URLs
+- [ ] Trigger share from TradeResultToast (win) and UserMenu (portfolio)
+- [ ] Tests
+
+---
+
 ## Progress Tracker
 
 | Sprint                                | Status       | Commit    | Audit |

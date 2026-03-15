@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Flipr v2 Core Palette */
+  /* Flipr v2 Core Palette — Sprint 11 refresh */
   --color-flipr-dark: #1A1A1A;
   --color-flipr-card: #FFFFFF;
-  --color-flipr-yes: #84B500;
+  --color-flipr-yes: #8AE600;
   --color-flipr-no: #D45847;
   --color-flipr-ink: #2D3748;
 
   /* Premium gradient endpoints */
-  --color-flipr-yes-dark: #5a7d00;
-  --color-flipr-yes-light: #a3d400;
+  --color-flipr-yes-dark: #6BB300;
+  --color-flipr-yes-light: #A3FF1A;
 
-  /* Font families */
+  /* Font families — Sprint 11: Space Grotesk for headings */
+  --font-display: "Space Grotesk", system-ui, sans-serif;
   --font-serif: "Playfair Display", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Roboto Mono", monospace;
@@ -24,16 +25,37 @@
   /* Odds flash animations */
   --animate-flash-green: flash-green 0.6s ease-out;
   --animate-flash-red: flash-red 0.6s ease-out;
+
+  /* Dopamine pulse animation */
+  --animate-profit-pulse: profit-pulse 0.6s ease-out;
+  --animate-glow-pulse: glow-pulse 2s ease-in-out infinite;
+  --animate-sparkle: sparkle 1.5s ease-in-out infinite;
 }
 
 @keyframes flash-green {
-  0% { background-color: rgba(132, 181, 0, 0.3); }
+  0% { background-color: rgba(138, 230, 0, 0.3); }
   100% { background-color: transparent; }
 }
 
 @keyframes flash-red {
   0% { background-color: rgba(212, 88, 71, 0.3); }
   100% { background-color: transparent; }
+}
+
+@keyframes profit-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(138, 230, 0, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(138, 230, 0, 0.5); }
+}
+
+@keyframes sparkle {
+  0%, 100% { box-shadow: 0 0 4px rgba(138, 230, 0, 0.1), 0 0 8px rgba(138, 230, 0, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(138, 230, 0, 0.4), 0 0 24px rgba(138, 230, 0, 0.2); }
 }
 
 /* Base styles */
@@ -78,7 +100,7 @@ html {
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
 }
 
-/* Primary CTA button — v2 uses FanDuel green */
+/* Primary CTA button */
 .btn-primary {
   @apply rounded-full bg-flipr-yes px-6 py-2.5 font-sans text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95;
 }
@@ -86,25 +108,50 @@ html {
 /* Premium gradient button */
 .btn-gradient {
   @apply rounded-full px-6 py-2.5 font-sans text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95;
-  background: linear-gradient(135deg, #84B500 0%, #a3d400 100%);
+  background: linear-gradient(135deg, #8AE600 0%, #A3FF1A 100%);
 }
 
 /* Premium gradient YES button */
 .btn-yes-gradient {
   @apply flex-1 rounded-xl py-3 text-sm font-bold text-white transition-all active:scale-95;
-  background: linear-gradient(135deg, #84B500 0%, #a3d400 100%);
+  background: linear-gradient(135deg, #8AE600 0%, #A3FF1A 100%);
 }
 
 /* Premium gradient pill — used for balance display */
 .pill-gradient {
   @apply rounded-full px-3 py-1 font-mono text-sm font-bold text-white;
-  background: linear-gradient(135deg, #84B500 0%, #5a7d00 100%);
+  background: linear-gradient(135deg, #8AE600 0%, #6BB300 100%);
 }
 
 /* Hide scrollbar utility */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* Radial accent glow behind active card */
+.card-glow {
+  position: relative;
+}
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at center, rgba(138, 230, 0, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Odds volatility sparkle on card border */
+.card-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+  border: 1px solid rgba(138, 230, 0, 0.3);
+}
+
+/* Win streak glow escalation */
+.streak-glow-1 { text-shadow: 0 0 4px rgba(138, 230, 0, 0.3); }
+.streak-glow-2 { text-shadow: 0 0 8px rgba(138, 230, 0, 0.5); }
+.streak-glow-3 { text-shadow: 0 0 12px rgba(138, 230, 0, 0.7), 0 0 24px rgba(138, 230, 0, 0.3); }
 
 /* Small phone: tighten spacing */
 @media (max-height: 600px) {

@@ -1,15 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { PrivyProvider } from "@/providers/PrivyProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ServiceWorkerProvider } from "@/providers/ServiceWorkerProvider";
 import "./globals.css";
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
   display: "swap",
-  weight: ["400", "700", "900"],
+  weight: ["400", "600", "700"],
 });
 
 const inter = Inter({
@@ -54,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${inter.variable} ${jetbrainsMono.variable}`}
+        className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       >
         <PrivyProvider>
           <AuthProvider>

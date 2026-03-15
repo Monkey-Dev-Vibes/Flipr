@@ -61,7 +61,7 @@ export function CoolingOffModal({
               </div>
             </div>
 
-            <h2 className="text-center font-serif text-2xl font-bold text-flipr-ink">
+            <h2 className="text-center font-display text-2xl font-bold text-flipr-ink">
               Take a break?
             </h2>
 
