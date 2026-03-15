@@ -82,7 +82,7 @@ export function TradePanel({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl bg-flipr-card shadow-panel will-change-transform"
+        className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-lg rounded-t-3xl bg-flipr-card shadow-panel will-change-transform"
         style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
         {/* Drag handle */}

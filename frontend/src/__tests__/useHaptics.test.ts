@@ -33,7 +33,7 @@ describe("useHaptics", () => {
   it("heavyImpact triggers a heavy vibration", () => {
     const { result } = renderHook(() => useHaptics());
     act(() => result.current.heavyImpact());
-    expect(vibrateMock).toHaveBeenCalledWith(40);
+    expect(vibrateMock).toHaveBeenCalledWith([40, 60, 20]);
   });
 
   it("startDragTick begins interval, stopDragTick clears it", () => {
@@ -73,8 +73,8 @@ describe("useHaptics", () => {
     const { result } = renderHook(() => useHaptics());
 
     act(() => result.current.startRampingHold(1500));
-    // First interval is 100ms
-    act(() => vi.advanceTimersByTime(100));
+    // First interval is 120ms
+    act(() => vi.advanceTimersByTime(120));
     expect(vibrateMock).toHaveBeenCalledWith(8);
 
     act(() => result.current.stopRampingHold());
@@ -111,7 +111,7 @@ describe("useHaptics", () => {
     const { result, unmount } = renderHook(() => useHaptics());
 
     act(() => result.current.startRampingHold(1500));
-    act(() => vi.advanceTimersByTime(100));
+    act(() => vi.advanceTimersByTime(120));
     expect(vibrateMock).toHaveBeenCalledTimes(1);
 
     unmount();

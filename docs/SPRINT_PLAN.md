@@ -134,14 +134,14 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 
 **Goal**: App feels production-ready with PWA capabilities.
 
-- [ ] PWA manifest and service worker setup
-- [ ] Offline fallback page
-- [ ] Loading states and skeleton screens
-- [ ] Error boundaries and error UI
-- [ ] Responsive edge cases (tablets, small phones)
-- [ ] Performance audit (Lighthouse)
-- [ ] Final haptic tuning
-- [ ] Environment configuration for production deployment
+- [x] PWA manifest and service worker setup
+- [x] Offline fallback page
+- [x] Loading states and skeleton screens
+- [x] Error boundaries and error UI
+- [x] Responsive edge cases (tablets, small phones)
+- [x] Performance audit (Lighthouse)
+- [x] Final haptic tuning
+- [x] Environment configuration for production deployment
 
 ---
 
@@ -158,4 +158,4 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 | 7 - Trade Execution             | **Complete** | --        | Audit 7: 3 issues reviewed, 3 fixes applied    |
 | 8 - Odds Polling & Slippage     | **Complete** | --        | Audit 8: 4 issues reviewed, 4 fixes applied    |
 | 9 - Onboarding                  | **Complete** | --        | Audit 9: 4 issues reviewed, 3 fixes applied    |
-| 10 - Polish & PWA               | Pending      | --        | --                                             |
+| 10 - Polish & PWA               | **Complete** | --        | --                                             |

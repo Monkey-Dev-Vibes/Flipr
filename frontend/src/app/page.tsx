@@ -13,6 +13,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useOddsPolling } from "@/hooks/useOddsPolling";
 import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
+import { FeedSkeleton } from "@/components/FeedSkeleton";
 import type {
   Market,
   SwipeDirection,
@@ -124,16 +125,16 @@ export default function Home() {
   );
 
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center overflow-locked bg-flipr-dark px-4">
+    <div className="flex min-h-[100dvh] w-full max-w-lg mx-auto flex-col items-center justify-center overflow-locked bg-flipr-dark px-4">
       {/* Header bar */}
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center justify-between px-4 pb-2 pt-safe-top">
+      <div className="fixed left-0 right-0 top-0 z-40 mx-auto flex max-w-lg items-center justify-between px-4 pb-2 pt-safe-top">
         <h1 className="font-serif text-xl font-bold text-flipr-card">flipr</h1>
         {isAuthenticated ? <UserMenu /> : <LoginButton />}
       </div>
 
       {/* Main content */}
       {isLoading ? (
-        <div className="font-mono text-sm text-flipr-card/30">Loading…</div>
+        <FeedSkeleton />
       ) : !isAuthenticated ? (
         <div className="flex flex-col items-center gap-6">
           <h2 className="font-serif text-3xl font-bold text-flipr-card">
@@ -145,14 +146,14 @@ export default function Home() {
           <button
             type="button"
             onClick={() => router.push("/onboarding")}
-            className="rounded-full bg-flipr-yes px-6 py-2.5 font-sans text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+            className="btn-primary"
           >
             Get Started
           </button>
           <LoginButton />
         </div>
       ) : !isOnboardingComplete ? (
-        <div className="font-mono text-sm text-flipr-card/30">Loading…</div>
+        <FeedSkeleton />
       ) : (
         <>
           <CardStack markets={mockMarkets} onSwipe={handleSwipe} liveOdds={liveOdds} />

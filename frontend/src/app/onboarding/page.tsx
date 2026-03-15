@@ -125,9 +125,10 @@ export default function OnboardingPage() {
                 className="flex flex-col items-center gap-3"
               >
                 {isLoading ? (
-                  <span className="font-mono text-xs text-flipr-card/30">
-                    Loading...
-                  </span>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="h-10 w-32 animate-pulse rounded-full bg-flipr-card/10" />
+                    <div className="h-4 w-40 animate-pulse rounded bg-flipr-card/5" />
+                  </div>
                 ) : (
                   <>
                     <LoginButton />

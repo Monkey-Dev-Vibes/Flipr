@@ -156,7 +156,7 @@ function CardStackInner({
   }, [setExitDirection, setCurrentIndex]);
 
   return (
-    <div className="relative h-[480px] w-full max-w-sm">
+    <div className="relative h-[min(480px,65dvh)] w-full max-w-sm">
       {/* Next card (behind, static) */}
       {nextMarket && (
         <div className="absolute inset-0 scale-[0.95] opacity-60">
