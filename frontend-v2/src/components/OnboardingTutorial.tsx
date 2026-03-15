@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MarketCard } from "./MarketCard";
 import type { Market } from "@/lib/types";
@@ -30,10 +30,17 @@ interface OnboardingTutorialProps {
  */
 export function OnboardingTutorial({ onComplete }: OnboardingTutorialProps) {
   const [step, setStep] = useState<TutorialStep>("intro");
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleTapYes = useCallback(() => {
     setStep("complete");
-    setTimeout(onComplete, 1600);
+    timerRef.current = setTimeout(onComplete, 1600);
   }, [onComplete]);
 
   return (

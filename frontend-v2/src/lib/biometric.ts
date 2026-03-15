@@ -15,34 +15,26 @@ export async function isBiometricSupported(): Promise<boolean> {
 
 /**
  * Trigger a biometric verification using WebAuthn.
- * This creates a credential challenge that prompts FaceID/TouchID.
+ * Uses credentials.get() with an empty allowCredentials list to prompt
+ * the platform authenticator (FaceID/TouchID) for user verification
+ * without requiring a pre-registered credential.
  * Returns true if verification succeeds, false otherwise.
  */
 export async function requestBiometricVerification(): Promise<boolean> {
   try {
-    // Generate a random challenge
     const challenge = new Uint8Array(32);
     crypto.getRandomValues(challenge);
 
-    const credential = await navigator.credentials.create({
+    const assertion = await navigator.credentials.get({
       publicKey: {
         challenge,
-        rp: { name: "Flipr" },
-        user: {
-          id: new Uint8Array(16),
-          name: "flipr-user",
-          displayName: "Flipr User",
-        },
-        pubKeyCredParams: [{ alg: -7, type: "public-key" }],
-        authenticatorSelection: {
-          authenticatorAttachment: "platform",
-          userVerification: "required",
-        },
+        rpId: window.location.hostname,
+        userVerification: "required",
         timeout: 30000,
       },
     });
 
-    return credential !== null;
+    return assertion !== null;
   } catch {
     return false;
   }

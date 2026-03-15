@@ -54,7 +54,7 @@ def _find_key(jwk_set: jwt.PyJWKSet, kid: str) -> Optional[jwt.PyJWK]:
     return None
 
 
-async def _verify_privy_token(token: str) -> dict:
+async def verify_privy_token(token: str) -> dict:
     """Verify a Privy access token and return its claims."""
     jwks_data = await _get_jwks()
     jwk_set = jwt.PyJWKSet.from_dict(jwks_data)
@@ -100,7 +100,7 @@ async def get_current_user(
         )
 
     try:
-        claims = await _verify_privy_token(credentials.credentials)
+        claims = await verify_privy_token(credentials.credentials)
     except (jwt.PyJWTError, ValueError, httpx.HTTPError) as exc:
         logger.warning("JWT verification failed: %s", exc)
         raise HTTPException(
@@ -121,7 +121,7 @@ async def get_optional_user(
         return None
 
     try:
-        claims = await _verify_privy_token(credentials.credentials)
+        claims = await verify_privy_token(credentials.credentials)
         privy_user_id = claims.get("sub", "")
         return UserSession(privy_user_id=privy_user_id)
     except (jwt.PyJWTError, ValueError, httpx.HTTPError):

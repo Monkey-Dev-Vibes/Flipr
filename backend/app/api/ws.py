@@ -9,7 +9,7 @@ from typing import Dict, Set
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.core.security import _verify_privy_token
+from app.core.security import verify_privy_token
 from app.services.market_service import get_market_service
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ async def stream_odds(websocket: WebSocket, market_id: str):
         return
 
     try:
-        claims = await _verify_privy_token(token)
+        claims = await verify_privy_token(token)
         user_id = claims.get("sub", "unknown")
     except Exception:
         await websocket.close(code=4001, reason="Invalid auth token")

@@ -39,6 +39,7 @@ export function useMarketFeed(
       const token = await getToken();
       if (!token) {
         setMarkets(mockMarkets);
+        setIsLoading(false);
         return;
       }
 

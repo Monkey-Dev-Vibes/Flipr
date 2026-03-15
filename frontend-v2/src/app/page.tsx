@@ -16,6 +16,7 @@ import { useOnboarding } from "@/hooks/useOnboarding";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
 import { useOddsWebSocket } from "@/hooks/useOddsWebSocket";
 import { useMarketFeed } from "@/hooks/useMarketFeed";
+import { useUserState } from "@/hooks/useUserState";
 import { executeTrade } from "@/lib/api";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
 
@@ -35,6 +36,7 @@ export default function HomePage() {
     dismissCooling,
   } = useCoolingOff();
   const { markets, isLoading: isFeedLoading } = useMarketFeed(getAuthToken);
+  const { userState, refetch: refetchUserState } = useUserState(getAuthToken);
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
@@ -128,9 +130,10 @@ export default function HomePage() {
       } finally {
         setIsSubmitting(false);
         setTrade(null);
+        refetchUserState();
       }
     },
-    [getAuthToken, recordTradeResult],
+    [getAuthToken, recordTradeResult, refetchUserState],
   );
 
   return (
@@ -207,8 +210,8 @@ export default function HomePage() {
 
       {/* Cooling-off modal */}
       <CoolingOffModal
-        visible={shouldShowCooling}
-        consecutiveLosses={consecutiveLosses}
+        visible={shouldShowCooling || (userState?.consecutiveLosses ?? 0) >= 5}
+        consecutiveLosses={userState?.consecutiveLosses ?? consecutiveLosses}
         onDismiss={dismissCooling}
         onTakeBreak={() => {
           dismissCooling();
