@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Inter, JetBrains_Mono } from "next/font/google";
+import { PrivyProvider } from "@/providers/PrivyProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import { ServiceWorkerProvider } from "@/providers/ServiceWorkerProvider";
 import "./globals.css";
 
@@ -54,7 +56,11 @@ export default function RootLayout({
       <body
         className={`${playfair.variable} ${inter.variable} ${jetbrainsMono.variable}`}
       >
-        <ServiceWorkerProvider>{children}</ServiceWorkerProvider>
+        <PrivyProvider>
+          <AuthProvider>
+            <ServiceWorkerProvider>{children}</ServiceWorkerProvider>
+          </AuthProvider>
+        </PrivyProvider>
       </body>
     </html>
   );

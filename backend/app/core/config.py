@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     # Hyperliquid
     hyperliquid_testnet: bool = True
 
+    # Privy
+    privy_app_id: str = ""
+    privy_app_secret: str = ""
+    privy_jwks_url: str = "https://auth.privy.io/api/v1/apps/{app_id}/jwks.json"
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

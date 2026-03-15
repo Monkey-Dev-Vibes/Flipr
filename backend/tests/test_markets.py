@@ -38,6 +38,8 @@ MOCK_ODDS = {
     "last_updated": "2026-03-15T00:00:00+00:00",
 }
 
+AUTH_HEADERS = {"Authorization": "Bearer test.mock.token"}
+
 
 @pytest.fixture(autouse=True)
 def _reset_market_service():
@@ -49,9 +51,18 @@ def _reset_market_service():
     svc._market_service = None
 
 
+def _mock_auth():
+    """Return a context manager that bypasses Privy JWT verification."""
+    return patch(
+        "app.core.security._verify_privy_token",
+        new_callable=AsyncMock,
+        return_value={"sub": "did:privy:test123"},
+    )
+
+
 @pytest.mark.asyncio
 async def test_feed_returns_markets():
-    with patch(
+    with _mock_auth(), patch(
         "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
         new_callable=AsyncMock,
         return_value=MOCK_RAW_MARKETS,
@@ -59,7 +70,7 @@ async def test_feed_returns_markets():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            response = await client.get("/markets/feed")
+            response = await client.get("/markets/feed", headers=AUTH_HEADERS)
 
     assert response.status_code == 200
     body = response.json()
@@ -72,7 +83,7 @@ async def test_feed_returns_markets():
 
 @pytest.mark.asyncio
 async def test_feed_respects_limit():
-    with patch(
+    with _mock_auth(), patch(
         "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
         new_callable=AsyncMock,
         return_value=MOCK_RAW_MARKETS,
@@ -80,7 +91,7 @@ async def test_feed_respects_limit():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            response = await client.get("/markets/feed?limit=1")
+            response = await client.get("/markets/feed?limit=1", headers=AUTH_HEADERS)
 
     assert response.status_code == 200
     body = response.json()
@@ -89,7 +100,7 @@ async def test_feed_respects_limit():
 
 @pytest.mark.asyncio
 async def test_feed_empty_when_adapter_fails():
-    with patch(
+    with _mock_auth(), patch(
         "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
         new_callable=AsyncMock,
         return_value=[],
@@ -97,7 +108,7 @@ async def test_feed_empty_when_adapter_fails():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            response = await client.get("/markets/feed")
+            response = await client.get("/markets/feed", headers=AUTH_HEADERS)
 
     assert response.status_code == 200
     body = response.json()
@@ -106,7 +117,7 @@ async def test_feed_empty_when_adapter_fails():
 
 @pytest.mark.asyncio
 async def test_odds_returns_market_odds():
-    with patch(
+    with _mock_auth(), patch(
         "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
         new_callable=AsyncMock,
         return_value=MOCK_ODDS,
@@ -114,7 +125,7 @@ async def test_odds_returns_market_odds():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            response = await client.get("/markets/mkt-001/odds")
+            response = await client.get("/markets/mkt-001/odds", headers=AUTH_HEADERS)
 
     assert response.status_code == 200
     body = response.json()
@@ -124,7 +135,7 @@ async def test_odds_returns_market_odds():
 
 @pytest.mark.asyncio
 async def test_odds_returns_error_on_failure():
-    with patch(
+    with _mock_auth(), patch(
         "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
         new_callable=AsyncMock,
         return_value={"market_id": "mkt-999", "error": "Not found"},
@@ -132,7 +143,7 @@ async def test_odds_returns_error_on_failure():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as client:
-            response = await client.get("/markets/mkt-999/odds")
+            response = await client.get("/markets/mkt-999/odds", headers=AUTH_HEADERS)
 
     assert response.status_code == 200
     body = response.json()

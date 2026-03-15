@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.markets import router as markets_router
 from app.core.config import APP_VERSION, settings
@@ -42,5 +43,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(markets_router)
