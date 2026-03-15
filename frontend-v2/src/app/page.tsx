@@ -10,6 +10,7 @@ import { SuccessConfetti } from "@/components/SuccessConfetti";
 import { CoolingOffModal } from "@/components/CoolingOffModal";
 import { WinStreakBadge } from "@/components/WinStreakBadge";
 import { MilestoneOverlay } from "@/components/MilestoneOverlay";
+import { SharePreviewModal } from "@/components/SharePreviewModal";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { FeedSkeleton } from "@/components/FeedSkeleton";
@@ -51,7 +52,12 @@ export default function HomePage() {
     recordTrade: recordMilestone,
     dismissMilestone,
   } = useMilestones();
-  const { share: shareCard } = useShareCard();
+  const {
+    generatePreview,
+    confirmShare,
+    dismissPreview,
+    preview: sharePreview,
+  } = useShareCard();
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
@@ -232,7 +238,7 @@ export default function HomePage() {
                 const gain = tradeResult.executed_price
                   ? tradeResult.executed_price - 50
                   : 0;
-                shareCard(
+                generatePreview(
                   {
                     type: "trade-win",
                     question: tradeResult.market_id,
@@ -248,6 +254,13 @@ export default function HomePage() {
           />
         )}
       </AnimatePresence>
+
+      {/* Share preview modal */}
+      <SharePreviewModal
+        preview={sharePreview}
+        onShare={confirmShare}
+        onDismiss={dismissPreview}
+      />
 
       {/* Success confetti */}
       <SuccessConfetti

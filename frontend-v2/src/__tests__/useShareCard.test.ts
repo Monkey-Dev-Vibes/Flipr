@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 import { describe, it, expect, vi } from "vitest";
-import { renderHook } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useShareCard } from "@/hooks/useShareCard";
 
 // Mock the canvas renderer
@@ -11,37 +11,66 @@ vi.mock("@/lib/shareCardRenderer", () => ({
 }));
 
 describe("useShareCard", () => {
-  it("returns share function and isSharing state", () => {
+  it("returns expected API shape", () => {
     const { result } = renderHook(() => useShareCard());
-    expect(typeof result.current.share).toBe("function");
-    expect(result.current.isSharing).toBe(false);
+    expect(typeof result.current.generatePreview).toBe("function");
+    expect(typeof result.current.confirmShare).toBe("function");
+    expect(typeof result.current.dismissPreview).toBe("function");
+    expect(result.current.preview).toBeNull();
+    expect(result.current.isGenerating).toBe(false);
   });
 
-  it("falls back to clipboard when Web Share API is unavailable", async () => {
-    const writeTextMock = vi.fn().mockResolvedValue(undefined);
-    Object.defineProperty(navigator, "clipboard", {
-      value: { writeText: writeTextMock },
-      writable: true,
-      configurable: true,
-    });
-
-    // Ensure navigator.share is not available
-    Object.defineProperty(navigator, "share", {
-      value: undefined,
-      writable: true,
-      configurable: true,
+  it("generatePreview creates a preview with imageUrl", async () => {
+    // Mock URL.createObjectURL
+    const mockUrl = "blob:http://localhost/mock-image";
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: vi.fn(() => mockUrl),
+      revokeObjectURL: vi.fn(),
     });
 
     const { result } = renderHook(() => useShareCard());
-    const shareResult = await result.current.share({
-      type: "trade-win",
-      question: "Test?",
-      intent: "yes",
-      percentGain: 10,
-      amount: 25,
+
+    await act(async () => {
+      await result.current.generatePreview({
+        type: "trade-win",
+        question: "Test?",
+        intent: "yes",
+        percentGain: 10,
+        amount: 25,
+      });
     });
 
-    expect(shareResult.shared).toBe(true);
-    expect(writeTextMock).toHaveBeenCalled();
+    expect(result.current.preview).not.toBeNull();
+    expect(result.current.preview?.imageUrl).toBe(mockUrl);
+    expect(result.current.preview?.shareText).toContain("+10.0%");
+  });
+
+  it("dismissPreview clears the preview", async () => {
+    vi.stubGlobal("URL", {
+      ...URL,
+      createObjectURL: vi.fn(() => "blob:mock"),
+      revokeObjectURL: vi.fn(),
+    });
+
+    const { result } = renderHook(() => useShareCard());
+
+    await act(async () => {
+      await result.current.generatePreview({
+        type: "trade-win",
+        question: "Test?",
+        intent: "yes",
+        percentGain: 10,
+        amount: 25,
+      });
+    });
+
+    expect(result.current.preview).not.toBeNull();
+
+    act(() => {
+      result.current.dismissPreview();
+    });
+
+    expect(result.current.preview).toBeNull();
   });
 });
