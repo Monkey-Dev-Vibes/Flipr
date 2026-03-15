@@ -1,5 +1,7 @@
 "use client";
 
+import "./globals.css";
+
 export default function GlobalError({
   reset,
 }: {
@@ -8,41 +10,18 @@ export default function GlobalError({
 }) {
   return (
     <html lang="en">
-      <body
-        style={{
-          background: "#1A1A1A",
-          color: "#FFFFFF",
-          fontFamily: "Inter, system-ui, sans-serif",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "100dvh",
-          margin: 0,
-          textAlign: "center",
-          padding: "1.5rem",
-        }}
-      >
+      <body className="bg-flipr-dark text-white font-sans flex items-center justify-center min-h-dvh m-0 text-center p-6">
         <div>
-          <h1 style={{ fontSize: "1.5rem", fontWeight: 700 }}>
+          <h1 className="text-2xl font-bold">
             Something went wrong
           </h1>
-          <p style={{ marginTop: "0.75rem", opacity: 0.5, fontSize: "0.875rem" }}>
+          <p className="mt-3 opacity-50 text-sm">
             A critical error occurred. Please refresh the page.
           </p>
           <button
             type="button"
             onClick={() => reset()}
-            style={{
-              marginTop: "2rem",
-              background: "#8AE600",
-              color: "white",
-              border: "none",
-              borderRadius: "9999px",
-              padding: "0.625rem 1.5rem",
-              fontSize: "0.875rem",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
+            className="mt-8 bg-[#8AE600] text-white border-none rounded-full px-6 py-2.5 text-sm font-semibold cursor-pointer"
           >
             Try again
           </button>

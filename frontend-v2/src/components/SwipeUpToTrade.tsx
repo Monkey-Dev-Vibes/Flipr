@@ -68,8 +68,7 @@ export function SwipeUpToTrade({
 
   return (
     <div
-      className={`relative w-full overflow-hidden rounded-2xl ${bgColorMuted}`}
-      style={{ height: 56 }}
+      className={`relative w-full overflow-hidden rounded-2xl h-14 ${bgColorMuted}`}
     >
       {/* Progress fill background */}
       <motion.div

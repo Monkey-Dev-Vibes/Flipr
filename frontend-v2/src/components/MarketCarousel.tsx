@@ -56,12 +56,7 @@ export function MarketCarousel({ markets, onSelect, volatileMarketIds }: MarketC
       {/* Scrollable card track */}
       <div
         ref={scrollRef}
-        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-[7.5vw] pb-4 scrollbar-none"
-        style={{
-          scrollBehavior: "smooth",
-          WebkitOverflowScrolling: "touch",
-          scrollbarWidth: "none",
-        }}
+        className="flex snap-x snap-mandatory gap-4 overflow-x-auto px-[7.5vw] pb-4 scrollbar-none scroll-smooth touch-pan-x"
       >
         {markets.map((market, i) => {
           const isActive = i === activeIndex;
@@ -69,8 +64,7 @@ export function MarketCarousel({ markets, onSelect, volatileMarketIds }: MarketC
           return (
             <div
               key={market.id}
-              className={`w-[85vw] max-w-[360px] flex-shrink-0 snap-center ${isActive ? "card-glow" : ""} ${isVolatile ? "card-sparkle" : ""}`}
-              style={{ height: "min(520px, 68dvh)" }}
+              className={`w-[85vw] max-w-[360px] flex-shrink-0 snap-center h-[min(520px,68dvh)] ${isActive ? "card-glow" : ""} ${isVolatile ? "card-sparkle" : ""}`}
             >
               <MarketCard market={market} onSelect={onSelect} />
             </div>
@@ -85,7 +79,7 @@ export function MarketCarousel({ markets, onSelect, volatileMarketIds }: MarketC
             key={market.id}
             type="button"
             role="tab"
-            aria-selected={i === activeIndex}
+            aria-selected={i === activeIndex ? "true" : "false"}
             aria-label={`Market ${i + 1}`}
             onClick={() => scrollToIndex(i)}
             className={`h-1.5 rounded-full transition-all duration-200 ${
