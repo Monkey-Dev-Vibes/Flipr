@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { MarketCarousel } from "@/components/MarketCarousel";
@@ -14,6 +14,7 @@ import { FeedSkeleton } from "@/components/FeedSkeleton";
 import { useAuth } from "@/providers/AuthProvider";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useCoolingOff } from "@/hooks/useCoolingOff";
+import { useOddsWebSocket } from "@/hooks/useOddsWebSocket";
 import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
@@ -37,6 +38,23 @@ export default function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Locked price at selection time for slippage detection
+  const lockedPrice = useMemo(() => {
+    if (!trade) return 0;
+    return trade.intent === "yes"
+      ? trade.market.yesPrice
+      : trade.market.noPrice;
+  }, [trade]);
+
+  // Real-time odds via WebSocket (fallback to HTTP polling)
+  const { liveOdds, slippage, isStale } = useOddsWebSocket({
+    marketId: trade?.market.id ?? null,
+    intent: trade?.intent ?? null,
+    lockedPrice,
+    getToken: getAuthToken,
+    enabled: !!trade && !isSubmitting,
+  });
 
   useEffect(() => {
     if (isAuthenticated && !isOnboardingComplete) {
@@ -162,6 +180,9 @@ export default function HomePage() {
             onClose={handleClosePanel}
             onConfirm={handleConfirmTrade}
             isSubmitting={isSubmitting}
+            slippageDetected={slippage}
+            liveOdds={liveOdds}
+            isStale={isStale}
           />
         )}
       </AnimatePresence>
