@@ -136,7 +136,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-dvh w-full max-w-lg mx-auto flex-col overflow-locked bg-flipr-dark">
       {/* Header bar */}
-      <header className="fixed left-0 right-0 top-0 z-40 mx-auto flex max-w-lg items-center justify-between px-5 pb-2 pt-safe-top">
+      <header className="fixed left-0 right-0 top-0 z-40 mx-auto flex max-w-lg items-center justify-between border-b border-flipr-yes/10 px-5 pb-2 pt-safe-top">
         <h1 className="font-serif text-xl font-bold text-flipr-card">flipr</h1>
         {isAuthenticated ? <UserMenu /> : <LoginButton />}
       </header>

@@ -78,7 +78,7 @@ export function MarketCard({
         <button
           type="button"
           onClick={() => onSelect?.(market, "yes")}
-          className="flex-1 rounded-xl bg-flipr-yes py-3 text-sm font-bold text-white transition-all active:scale-95"
+          className="btn-yes-gradient"
         >
           YES
         </button>

@@ -10,8 +10,8 @@ export function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      {/* Balance display */}
-      <span className="font-mono text-sm font-bold text-flipr-yes">
+      {/* Premium gradient balance pill */}
+      <span className="pill-gradient">
         {user.balance !== null ? `$${formatBalance(user.balance)}` : "—"}
       </span>
 

@@ -135,15 +135,15 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 
 ## Progress Tracker
 
-| Sprint                                | Status       | Commit | Audit |
-| ------------------------------------- | ------------ | ------ | ----- |
-| 1 - Scaffolding & v2 Design System   | **Building** | --     | --    |
-| 2 - Card v2 & Carousel               | Planned      | --     | --    |
-| 3 - Trade Panel & SwipeUp Pill        | Planned      | --     | --    |
-| 4 - Feed Page & Auth                  | Planned      | --     | --    |
-| 5 - Onboarding v2                     | Planned      | --     | --    |
-| 6 - Biometric & Cooling-Off          | Planned      | --     | --    |
-| 7 - Backend WebSocket & User State    | Planned      | --     | --    |
-| 8 - WebSocket Integration & Slippage  | Planned      | --     | --    |
-| 9 - Backend Integration & Trade       | Planned      | --     | --    |
-| 10 - Polish & PWA                     | Planned      | --     | --    |
+| Sprint                                | Status       | Commit    | Audit |
+| ------------------------------------- | ------------ | --------- | ----- |
+| 1 - Scaffolding & v2 Design System   | **Complete** | `3f9c771` | 3 fixes |
+| 2 - Card v2 & Carousel               | **Complete** | `ad67ca3` | 3 fixes |
+| 3 - Trade Panel & SwipeUp Pill        | **Complete** | `316bae0` | -- |
+| 4 - Feed Page & Auth                  | **Complete** | `0cef2e0` | 3 fixes |
+| 5 - Onboarding v2                     | **Complete** | `b927754` | -- |
+| 6 - Biometric & Cooling-Off          | **Complete** | `73c7989` | -- |
+| 7 - Backend WebSocket & User State    | **Complete** | `99d5111` | -- |
+| 8 - WebSocket Integration & Slippage  | **Complete** | `9fcad5e` | -- |
+| 9 - Backend Integration & Trade       | **Complete** | `5fa273d` | -- |
+| 10 - Polish & PWA                     | **Complete** | --        | -- |

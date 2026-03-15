@@ -89,6 +89,23 @@ html {
   background: linear-gradient(135deg, #84B500 0%, #a3d400 100%);
 }
 
+/* Premium gradient YES button */
+.btn-yes-gradient {
+  @apply flex-1 rounded-xl py-3 text-sm font-bold text-white transition-all active:scale-95;
+  background: linear-gradient(135deg, #84B500 0%, #a3d400 100%);
+}
+
+/* Premium gradient pill — used for balance display */
+.pill-gradient {
+  @apply rounded-full px-3 py-1 font-mono text-sm font-bold text-white;
+  background: linear-gradient(135deg, #84B500 0%, #5a7d00 100%);
+}
+
+/* Hide scrollbar utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 /* Small phone: tighten spacing */
 @media (max-height: 600px) {
   .pt-safe-top {
