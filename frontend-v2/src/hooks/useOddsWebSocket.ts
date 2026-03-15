@@ -81,12 +81,17 @@ export function useOddsWebSocket({
       const token = await getToken();
       if (!token || !activeRef.current) return;
 
-      const response = await fetchMarketOdds(marketId, token);
-      if (!activeRef.current) return;
+      try {
+        const response = await fetchMarketOdds(marketId, token);
+        if (!activeRef.current) return;
 
-      if (response.data) {
-        processOdds(response.data);
-      } else {
+        if (response.data) {
+          processOdds(response.data);
+        } else {
+          setIsStale(true);
+        }
+      } catch {
+        // Backend unavailable — mark stale, retry on next interval
         setIsStale(true);
       }
 
