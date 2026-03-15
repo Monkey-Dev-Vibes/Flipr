@@ -42,7 +42,7 @@ export function TradeResultToast({ result, onDismiss }: TradeResultToastProps) {
           {isSuccess ? (
             <p className="mt-0.5 text-xs text-white/80">
               {result.intent.toUpperCase()} ${result.amount.toFixed(2)} at{" "}
-              {result.executed_price?.toFixed(1)}¢
+              {result.executed_price?.toFixed(1)}%
               {result.fee ? ` · Fee: $${result.fee.toFixed(2)}` : ""}
             </p>
           ) : (

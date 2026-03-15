@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { createContext, lazy, Suspense, useContext } from "react";
 
 interface UserSession {
   userId: string;
@@ -25,10 +17,10 @@ interface AuthContextValue {
   getAuthToken: () => Promise<string | null>;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
+export const AuthContext = createContext<AuthContextValue | null>(null);
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
+const DEV_AUTH = process.env.NEXT_PUBLIC_DEV_AUTH === "true";
 
 const noopAuth: AuthContextValue = {
   isAuthenticated: false,
@@ -39,95 +31,48 @@ const noopAuth: AuthContextValue = {
   getAuthToken: async () => null,
 };
 
-/**
- * Internal provider that uses Privy hooks.
- * Only rendered when Privy is available.
- */
-function PrivyAuthProvider({ children }: { children: React.ReactNode }) {
-  const { ready, authenticated, user, login, logout, getAccessToken } =
-    usePrivy();
-  const { wallets } = useWallets();
-  const [balance, setBalance] = useState<number | null>(null);
-  const [verified, setVerified] = useState(false);
+const devAuth: AuthContextValue = {
+  isAuthenticated: true,
+  isLoading: false,
+  user: {
+    userId: "dev-user-001",
+    walletAddress: "0xDEV0000000000000000000000000000000000001",
+    balance: 100.0,
+  },
+  login: () => {},
+  logout: async () => { window.location.reload(); },
+  getAuthToken: async () => "dev-token",
+};
 
-  const embeddedWallet = wallets.find(
-    (w) => w.walletClientType === "privy",
-  );
+const loadingAuth: AuthContextValue = {
+  isAuthenticated: false,
+  isLoading: true,
+  user: null,
+  login: () => {},
+  logout: async () => {},
+  getAuthToken: async () => null,
+};
 
-  // Verify session with backend when user authenticates
-  useEffect(() => {
-    if (!authenticated || !user) return;
-
-    const controller = new AbortController();
-
-    getAccessToken()
-      .then((token) => {
-        if (!token || controller.signal.aborted) return;
-        return fetch(`${API_BASE}/auth/verify`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          signal: controller.signal,
-        });
-      })
-      .then((res) => {
-        if (!res || controller.signal.aborted) return;
-        if (res.ok) return res.json();
-      })
-      .then((data) => {
-        if (controller.signal.aborted) return;
-        if (data?.data?.balance !== undefined) {
-          setBalance(data.data.balance);
-        }
-        setVerified(true);
-      })
-      .catch(() => {
-        if (controller.signal.aborted) return;
-        // Backend may be unavailable in dev — still allow frontend auth
-        setVerified(true);
-      });
-
-    return () => controller.abort();
-  }, [authenticated, user, getAccessToken]);
-
-  const getAuthToken = useCallback(async (): Promise<string | null> => {
-    if (!authenticated) return null;
-    return getAccessToken();
-  }, [authenticated, getAccessToken]);
-
-  const handleLogout = useCallback(async () => {
-    setVerified(false);
-    setBalance(null);
-    await logout();
-  }, [logout]);
-
-  const session: UserSession | null = useMemo(() => {
-    if (!authenticated || !user || !verified) return null;
-    return {
-      userId: user.id,
-      walletAddress: embeddedWallet?.address ?? null,
-      balance,
-    };
-  }, [authenticated, user, verified, embeddedWallet?.address, balance]);
-
-  const value: AuthContextValue = useMemo(
-    () => ({
-      isAuthenticated: authenticated && verified,
-      isLoading: !ready,
-      user: session,
-      login,
-      logout: handleLogout,
-      getAuthToken,
-    }),
-    [authenticated, verified, ready, session, login, handleLogout, getAuthToken],
-  );
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
+// Lazy-load the Privy-dependent provider so @privy-io/react-auth
+// is never imported in dev bypass or no-privy modes.
+const LazyPrivyAuthProvider = lazy(() =>
+  import("./PrivyAuthProvider").then((mod) => ({
+    default: ({ children }: { children: React.ReactNode }) => (
+      <mod.PrivyAuthProvider AuthContext={AuthContext}>
+        {children}
+      </mod.PrivyAuthProvider>
+    ),
+  }))
+);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  // Dev bypass: auto-authenticate with a fake user (for HTTP mobile testing)
+  if (DEV_AUTH) {
+    return (
+      <AuthContext.Provider value={devAuth}>{children}</AuthContext.Provider>
+    );
+  }
+
   // When Privy is not configured, provide a no-op auth context
   if (!PRIVY_APP_ID) {
     return (
@@ -135,7 +80,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <PrivyAuthProvider>{children}</PrivyAuthProvider>;
+  return (
+    <Suspense
+      fallback={
+        <AuthContext.Provider value={loadingAuth}>
+          {children}
+        </AuthContext.Provider>
+      }
+    >
+      <LazyPrivyAuthProvider>{children}</LazyPrivyAuthProvider>
+    </Suspense>
+  );
 }
 
 export function useAuth(): AuthContextValue {

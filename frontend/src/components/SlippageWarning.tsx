@@ -37,10 +37,10 @@ export function SlippageWarning({
 
       <div className="mb-3 flex items-center justify-between font-mono text-sm">
         <span className="text-flipr-ink/50">
-          Was: <span className="font-bold">{originalOdds}¢</span>
+          Was: <span className="font-bold">{originalOdds}%</span>
         </span>
         <span className="text-flipr-no">→</span>
-        <span className="font-bold text-flipr-no">{currentOdds}¢</span>
+        <span className="font-bold text-flipr-no">{currentOdds}%</span>
       </div>
 
       <button

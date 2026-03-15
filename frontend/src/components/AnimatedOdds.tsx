@@ -8,7 +8,7 @@ interface AnimatedOddsProps {
 }
 
 /**
- * Displays a price in cents with a flash animation on change.
+ * Displays a probability as a percentage with a flash animation on change.
  * Uses monospaced font (inherited) and tabular-nums to prevent layout shift.
  */
 export function AnimatedOdds({ value, className = "" }: AnimatedOddsProps) {
@@ -40,7 +40,7 @@ export function AnimatedOdds({ value, className = "" }: AnimatedOddsProps) {
     <span
       className={`inline-block tabular-nums transition-colors duration-300 ${flashClass} ${className}`}
     >
-      {value}¢
+      {value}%
     </span>
   );
 }

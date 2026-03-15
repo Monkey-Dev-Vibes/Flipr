@@ -3,10 +3,11 @@
 import { PrivyProvider as PrivySDKProvider } from "@privy-io/react-auth";
 
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
+const DEV_AUTH = process.env.NEXT_PUBLIC_DEV_AUTH === "true";
 
 export function PrivyProvider({ children }: { children: React.ReactNode }) {
-  // Skip Privy initialization if no app ID is configured (e.g. during build / SSG)
-  if (!PRIVY_APP_ID) {
+  // Skip Privy in dev auth bypass mode or when no app ID is configured
+  if (DEV_AUTH || !PRIVY_APP_ID) {
     return <>{children}</>;
   }
 

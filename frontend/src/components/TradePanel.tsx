@@ -130,7 +130,7 @@ export function TradePanel({
             <div>
               <p className="text-xs text-flipr-ink/40">Locked Odds</p>
               <p className={`font-mono text-2xl font-bold tabular-nums ${accentColor}`}>
-                {lockedPrice}¢
+                {lockedPrice}%
               </p>
             </div>
             {liveOdds && (
