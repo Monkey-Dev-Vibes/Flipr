@@ -1,0 +1,78 @@
+import type { Market } from "./types";
+
+export type { Market };
+
+export const mockMarkets: Market[] = [
+  {
+    id: "mkt-001",
+    question: "Will GTA VI be delayed to 2026?",
+    category: "Pop Culture",
+    yesPrice: 65,
+    noPrice: 35,
+    volume: 124000,
+    expiresAt: "2025-12-31T23:59:59Z",
+  },
+  {
+    id: "mkt-002",
+    question: "Will the Fed cut rates in June?",
+    category: "Finance",
+    yesPrice: 42,
+    noPrice: 58,
+    volume: 892000,
+    expiresAt: "2025-06-30T23:59:59Z",
+  },
+  {
+    id: "mkt-003",
+    question: "Will Bitcoin hit $150k this year?",
+    category: "Crypto",
+    yesPrice: 28,
+    noPrice: 72,
+    volume: 2100000,
+    expiresAt: "2025-12-31T23:59:59Z",
+  },
+  {
+    id: "mkt-004",
+    question: "Will Apple announce AR glasses at WWDC?",
+    category: "Tech",
+    yesPrice: 19,
+    noPrice: 81,
+    volume: 340000,
+    expiresAt: "2025-06-15T23:59:59Z",
+  },
+  {
+    id: "mkt-005",
+    question: "Will Taylor Swift announce a new album?",
+    category: "Entertainment",
+    yesPrice: 73,
+    noPrice: 27,
+    volume: 560000,
+    expiresAt: "2025-09-01T23:59:59Z",
+  },
+  {
+    id: "mkt-006",
+    question: "Will Ethereum flip Bitcoin market cap?",
+    category: "Crypto",
+    yesPrice: 8,
+    noPrice: 92,
+    volume: 1450000,
+    expiresAt: "2025-12-31T23:59:59Z",
+  },
+  {
+    id: "mkt-007",
+    question: "Will US unemployment exceed 5%?",
+    category: "Finance",
+    yesPrice: 15,
+    noPrice: 85,
+    volume: 678000,
+    expiresAt: "2025-12-31T23:59:59Z",
+  },
+  {
+    id: "mkt-008",
+    question: "Will a Marvel film gross $2B in 2025?",
+    category: "Entertainment",
+    yesPrice: 34,
+    noPrice: 66,
+    volume: 230000,
+    expiresAt: "2025-12-31T23:59:59Z",
+  },
+];
