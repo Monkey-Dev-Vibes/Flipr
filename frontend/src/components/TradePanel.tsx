@@ -2,7 +2,9 @@
 
 import { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import type { Market, TradeConfirmation } from "@/lib/types";
+import type { Market, MarketOdds, TradeConfirmation } from "@/lib/types";
+import type { SlippageInfo } from "@/hooks/useOddsPolling";
+import { AnimatedOdds } from "./AnimatedOdds";
 import { BetSizeSlider } from "./BetSizeSlider";
 import { HoldToConfirm } from "./HoldToConfirm";
 import { SlippageWarning } from "./SlippageWarning";
@@ -12,9 +14,9 @@ interface TradePanelProps {
   intent: "yes" | "no";
   onClose: () => void;
   onConfirm: (trade: TradeConfirmation) => void;
-  /** Set when odds have shifted >5% — placeholder for Sprint 8 polling */
-  slippageDetected?: { originalOdds: number; currentOdds: number } | null;
-  /** True while the trade is being submitted to the backend */
+  slippageDetected?: SlippageInfo | null;
+  liveOdds?: MarketOdds | null;
+  isStale?: boolean;
   isSubmitting?: boolean;
 }
 
@@ -26,6 +28,8 @@ export function TradePanel({
   onClose,
   onConfirm,
   slippageDetected = null,
+  liveOdds = null,
+  isStale = false,
   isSubmitting = false,
 }: TradePanelProps) {
   const [betAmount, setBetAmount] = useState(DEFAULT_BET);
@@ -36,6 +40,13 @@ export function TradePanel({
   const accentColor = isYes ? "text-flipr-yes" : "text-flipr-no";
   const accentBg = isYes ? "bg-flipr-yes" : "bg-flipr-no";
   const intentLabel = isYes ? "YES" : "NO";
+
+  // Use live odds when available, fall back to locked price
+  const currentPrice = liveOdds
+    ? isYes
+      ? liveOdds.yes_price
+      : liveOdds.no_price
+    : lockedPrice;
 
   const hasSlippage = slippageDetected && !slippageAcknowledged;
 
@@ -48,13 +59,13 @@ export function TradePanel({
     });
   }, [market.id, intent, betAmount, lockedPrice, onConfirm]);
 
-  // Guard division by zero (4A)
+  // Guard division by zero
   const payout =
     lockedPrice > 0 ? (betAmount / (lockedPrice / 100)).toFixed(2) : "—";
 
   return (
     <>
-      {/* Backdrop overlay — blocks card interaction + tap to dismiss (2B+3A) */}
+      {/* Backdrop overlay — blocks card interaction + tap to dismiss */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -114,21 +125,41 @@ export function TradePanel({
             </button>
           </div>
 
-          {/* Locked odds + potential payout */}
+          {/* Locked odds + live odds + potential payout */}
           <div className="flex items-center justify-between rounded-2xl bg-flipr-ink/5 px-4 py-3">
             <div>
               <p className="text-xs text-flipr-ink/40">Locked Odds</p>
-              <p className={`font-mono text-2xl font-bold ${accentColor}`}>
+              <p className={`font-mono text-2xl font-bold tabular-nums ${accentColor}`}>
                 {lockedPrice}¢
               </p>
             </div>
+            {liveOdds && (
+              <div className="text-center">
+                <p className="text-xs text-flipr-ink/40">
+                  Live{isStale && " (stale)"}
+                </p>
+                <AnimatedOdds
+                  value={currentPrice}
+                  className={`font-mono text-2xl font-bold ${
+                    hasSlippage ? "text-flipr-no" : accentColor
+                  }`}
+                />
+              </div>
+            )}
             <div className="text-right">
               <p className="text-xs text-flipr-ink/40">Potential Payout</p>
-              <p className="font-mono text-2xl font-bold text-flipr-ink">
+              <p className="font-mono text-2xl font-bold tabular-nums text-flipr-ink">
                 ${payout}
               </p>
             </div>
           </div>
+
+          {/* Stale odds warning */}
+          {isStale && (
+            <p className="text-center text-xs font-medium text-flipr-no/70">
+              Odds may be outdated — connection issue
+            </p>
+          )}
 
           {/* Bet size */}
           <BetSizeSlider
@@ -137,7 +168,7 @@ export function TradePanel({
             intent={intent}
           />
 
-          {/* Slippage warning (placeholder — wired in Sprint 8) */}
+          {/* Slippage warning */}
           <AnimatePresence>
             {hasSlippage && (
               <SlippageWarning
@@ -148,11 +179,11 @@ export function TradePanel({
             )}
           </AnimatePresence>
 
-          {/* Hold to confirm */}
+          {/* Hold to confirm — disabled during slippage or stale odds */}
           <HoldToConfirm
             intent={intent}
             onConfirm={handleConfirm}
-            disabled={!!hasSlippage || isSubmitting}
+            disabled={!!hasSlippage || isSubmitting || isStale}
           />
 
           {/* Submitting indicator */}

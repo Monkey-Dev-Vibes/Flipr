@@ -23,24 +23,32 @@ export function HoldToConfirm({
   const rafRef = useRef<number | null>(null);
   const confirmedRef = useRef(false);
   const haptics = useHaptics();
+  const onConfirmRef = useRef(onConfirm);
+  const animateRef = useRef<() => void>(undefined);
 
-  const animate = useCallback(() => {
-    if (!startTimeRef.current) return;
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
 
-    const elapsed = Date.now() - startTimeRef.current;
-    const p = Math.min(elapsed / HOLD_DURATION_MS, 1);
-    setProgress(p);
+  useEffect(() => {
+    animateRef.current = () => {
+      if (!startTimeRef.current) return;
 
-    if (p >= 1 && !confirmedRef.current) {
-      confirmedRef.current = true;
-      haptics.stopRampingHold();
-      haptics.heavyImpact();
-      onConfirm();
-      return;
-    }
+      const elapsed = Date.now() - startTimeRef.current;
+      const p = Math.min(elapsed / HOLD_DURATION_MS, 1);
+      setProgress(p);
 
-    rafRef.current = requestAnimationFrame(animate);
-  }, [onConfirm, haptics]);
+      if (p >= 1 && !confirmedRef.current) {
+        confirmedRef.current = true;
+        haptics.stopRampingHold();
+        haptics.heavyImpact();
+        onConfirmRef.current();
+        return;
+      }
+
+      rafRef.current = requestAnimationFrame(() => animateRef.current?.());
+    };
+  }, [haptics]);
 
   const startHold = useCallback(() => {
     if (disabled) return;
@@ -49,8 +57,8 @@ export function HoldToConfirm({
     setHolding(true);
     setProgress(0);
     haptics.startRampingHold(HOLD_DURATION_MS);
-    rafRef.current = requestAnimationFrame(animate);
-  }, [disabled, animate, haptics]);
+    rafRef.current = requestAnimationFrame(() => animateRef.current?.());
+  }, [disabled, haptics]);
 
   const endHold = useCallback(() => {
     // Guard against post-confirmation cleanup (8A)

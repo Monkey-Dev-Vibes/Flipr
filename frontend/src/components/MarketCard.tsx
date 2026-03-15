@@ -2,12 +2,22 @@
 
 import type { Market } from "@/lib/types";
 import { formatVolume } from "@/lib/format";
+import { AnimatedOdds } from "./AnimatedOdds";
 
 interface MarketCardProps {
   market: Market;
+  liveYesPrice?: number;
+  liveNoPrice?: number;
 }
 
-export function MarketCard({ market }: MarketCardProps) {
+export function MarketCard({
+  market,
+  liveYesPrice,
+  liveNoPrice,
+}: MarketCardProps) {
+  const yesPrice = liveYesPrice ?? market.yesPrice;
+  const noPrice = liveNoPrice ?? market.noPrice;
+
   return (
     <div className="flex h-full w-full flex-col justify-between rounded-3xl bg-flipr-card p-6 shadow-card">
       {/* Header: category + volume */}
@@ -28,17 +38,19 @@ export function MarketCard({ market }: MarketCardProps) {
       {/* Odds pills */}
       <div className="mt-6 flex justify-between gap-4">
         <div className="flex flex-1 flex-col items-center rounded-2xl bg-flipr-no/10 px-4 py-3">
-          <span className="font-mono text-2xl font-bold text-flipr-no">
-            {market.noPrice}¢
-          </span>
+          <AnimatedOdds
+            value={noPrice}
+            className="font-mono text-2xl font-bold text-flipr-no"
+          />
           <span className="mt-1 text-xs font-semibold uppercase tracking-wider text-flipr-no/80">
             No
           </span>
         </div>
         <div className="flex flex-1 flex-col items-center rounded-2xl bg-flipr-yes/10 px-4 py-3">
-          <span className="font-mono text-2xl font-bold text-flipr-yes">
-            {market.yesPrice}¢
-          </span>
+          <AnimatedOdds
+            value={yesPrice}
+            className="font-mono text-2xl font-bold text-flipr-yes"
+          />
           <span className="mt-1 text-xs font-semibold uppercase tracking-wider text-flipr-yes/80">
             Yes
           </span>

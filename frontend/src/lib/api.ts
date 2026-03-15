@@ -1,4 +1,8 @@
-import type { TradeConfirmation, TradeExecuteResponse } from "./types";
+import type {
+  TradeConfirmation,
+  TradeExecuteResponse,
+  MarketOddsResponse,
+} from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -44,6 +48,33 @@ export async function executeTrade(
       error: "Something went wrong. Please try again.",
       meta: null,
     };
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetch live odds for a specific market.
+ * Used for 3-second polling while the trade panel is open.
+ */
+export async function fetchMarketOdds(
+  marketId: string,
+  token: string,
+): Promise<MarketOddsResponse> {
+  const response = await fetch(`${API_BASE}/markets/${marketId}/odds`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      return { data: null, error: "auth_expired" };
+    }
+    if (response.status === 429) {
+      return { data: null, error: "rate_limited" };
+    }
+    return { data: null, error: "Failed to fetch odds" };
   }
 
   return response.json();

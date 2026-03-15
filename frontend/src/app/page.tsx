@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { CardStack } from "@/components/CardStack";
 import { TradePanel } from "@/components/TradePanel";
@@ -8,6 +8,7 @@ import { TradeResultToast } from "@/components/TradeResultToast";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/providers/AuthProvider";
+import { useOddsPolling } from "@/hooks/useOddsPolling";
 import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
 import type {
@@ -27,6 +28,23 @@ export default function Home() {
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
+
+  // Locked price at swipe time (used for slippage comparison)
+  const lockedPrice = useMemo(() => {
+    if (!trade) return 0;
+    return trade.intent === "yes"
+      ? trade.market.yesPrice
+      : trade.market.noPrice;
+  }, [trade]);
+
+  // Poll live odds every 3 seconds while trade panel is open
+  const { liveOdds, slippage, isStale } = useOddsPolling({
+    marketId: trade?.market.id ?? null,
+    intent: trade?.intent ?? null,
+    lockedPrice,
+    getToken: getAuthToken,
+    enabled: !!trade && !isSubmitting,
+  });
 
   const handleSwipe = useCallback(
     (market: Market, direction: SwipeDirection) => {
@@ -117,7 +135,7 @@ export default function Home() {
         </div>
       ) : (
         <>
-          <CardStack markets={mockMarkets} onSwipe={handleSwipe} />
+          <CardStack markets={mockMarkets} onSwipe={handleSwipe} liveOdds={liveOdds} />
           <p className="mt-8 font-mono text-xs text-flipr-card/30">
             Swipe to predict
           </p>
@@ -134,6 +152,9 @@ export default function Home() {
             onClose={handleClosePanel}
             onConfirm={handleConfirmTrade}
             isSubmitting={isSubmitting}
+            slippageDetected={slippage}
+            liveOdds={liveOdds}
+            isStale={isStale}
           />
         )}
       </AnimatePresence>

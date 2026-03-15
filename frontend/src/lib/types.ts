@@ -32,3 +32,15 @@ export interface TradeExecuteResponse {
   error: string | null;
   meta: { fee: number; total_charge: number } | null;
 }
+
+export interface MarketOdds {
+  market_id: string;
+  yes_price: number;
+  no_price: number;
+  last_updated: string;
+}
+
+export interface MarketOddsResponse {
+  data: MarketOdds | null;
+  error: string | null;
+}

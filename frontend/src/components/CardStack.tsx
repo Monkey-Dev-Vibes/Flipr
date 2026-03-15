@@ -11,7 +11,7 @@ import {
 } from "framer-motion";
 import { MarketCard } from "./MarketCard";
 import { useHaptics } from "@/hooks/useHaptics";
-import type { Market, SwipeDirection } from "@/lib/types";
+import type { Market, MarketOdds, SwipeDirection } from "@/lib/types";
 
 const SWIPE_THRESHOLD = 120; // px to commit a horizontal swipe
 const SKIP_THRESHOLD = -100; // px (negative = upward) to commit a skip
@@ -71,9 +71,10 @@ function SwipeOverlay({
 interface CardStackProps {
   markets: Market[];
   onSwipe?: (market: Market, direction: SwipeDirection) => void;
+  liveOdds?: MarketOdds | null;
 }
 
-export function CardStack({ markets, onSwipe }: CardStackProps) {
+export function CardStack({ markets, onSwipe, liveOdds }: CardStackProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [exitDirection, setExitDirection] = useState<SwipeDirection>(null);
 
@@ -101,6 +102,10 @@ export function CardStack({ markets, onSwipe }: CardStackProps) {
     );
   }
 
+  // Only apply live odds to the active card if market IDs match
+  const activeOdds =
+    liveOdds && liveOdds.market_id === activeMarket.id ? liveOdds : null;
+
   return (
     <CardStackInner
       activeMarket={activeMarket}
@@ -109,6 +114,7 @@ export function CardStack({ markets, onSwipe }: CardStackProps) {
       setExitDirection={setExitDirection}
       setCurrentIndex={setCurrentIndex}
       onSwipe={onSwipe}
+      liveOdds={activeOdds}
     />
   );
 }
@@ -120,6 +126,7 @@ interface CardStackInnerProps {
   setExitDirection: (d: SwipeDirection) => void;
   setCurrentIndex: React.Dispatch<React.SetStateAction<number>>;
   onSwipe?: (market: Market, direction: SwipeDirection) => void;
+  liveOdds?: MarketOdds | null;
 }
 
 function CardStackInner({
@@ -129,6 +136,7 @@ function CardStackInner({
   setExitDirection,
   setCurrentIndex,
   onSwipe,
+  liveOdds,
 }: CardStackInnerProps) {
   const handleSwipeCommit = useCallback(
     (direction: SwipeDirection) => {
@@ -162,6 +170,7 @@ function CardStackInner({
             key={activeMarket.id}
             market={activeMarket}
             onSwipeCommit={handleSwipeCommit}
+            liveOdds={liveOdds}
           />
         )}
       </AnimatePresence>
@@ -190,9 +199,10 @@ function CardStackInner({
 interface SwipeableCardProps {
   market: Market;
   onSwipeCommit: (direction: SwipeDirection) => void;
+  liveOdds?: MarketOdds | null;
 }
 
-function SwipeableCard({ market, onSwipeCommit }: SwipeableCardProps) {
+function SwipeableCard({ market, onSwipeCommit, liveOdds }: SwipeableCardProps) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const haptics = useHaptics();
@@ -287,7 +297,11 @@ function SwipeableCard({ market, onSwipeCommit }: SwipeableCardProps) {
       />
 
       {/* Actual card content */}
-      <MarketCard market={market} />
+      <MarketCard
+        market={market}
+        liveYesPrice={liveOdds?.yes_price}
+        liveNoPrice={liveOdds?.no_price}
+      />
     </motion.div>
   );
 }
