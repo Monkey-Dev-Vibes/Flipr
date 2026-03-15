@@ -13,7 +13,9 @@ router = APIRouter(prefix="/markets", tags=["markets"])
 @limiter.limit("30/minute")
 async def get_market_feed(
     request: Request,
-    limit: int = Query(default=20, ge=1, le=50, description="Number of markets to return"),
+    limit: int = Query(
+        default=20, ge=1, le=50, description="Number of markets to return"
+    ),
     offset: int = Query(default=0, ge=0, description="Pagination offset"),
     user: UserSession = Depends(get_current_user),
 ):

@@ -21,8 +21,6 @@ def get_anthropic_client() -> anthropic.AsyncAnthropic:
     global _client
     if _client is None:
         if not settings.anthropic_api_key:
-            raise ValueError(
-                "ANTHROPIC_API_KEY is not set. Add it to your .env file."
-            )
+            raise ValueError("ANTHROPIC_API_KEY is not set. Add it to your .env file.")
         _client = anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
     return _client

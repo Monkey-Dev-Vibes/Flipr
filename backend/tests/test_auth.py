@@ -143,7 +143,9 @@ async def test_optional_user_returns_session_with_valid_token():
     """get_optional_user returns UserSession when token is valid."""
     from fastapi.security import HTTPAuthorizationCredentials
 
-    creds = HTTPAuthorizationCredentials(scheme="Bearer", credentials="valid.mock.token")
+    creds = HTTPAuthorizationCredentials(
+        scheme="Bearer", credentials="valid.mock.token"
+    )
 
     with patch(
         "app.core.security._verify_privy_token",

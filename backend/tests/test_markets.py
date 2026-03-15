@@ -62,10 +62,13 @@ def _mock_auth():
 
 @pytest.mark.asyncio
 async def test_feed_returns_markets():
-    with _mock_auth(), patch(
-        "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
-        new_callable=AsyncMock,
-        return_value=MOCK_RAW_MARKETS,
+    with (
+        _mock_auth(),
+        patch(
+            "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
+            new_callable=AsyncMock,
+            return_value=MOCK_RAW_MARKETS,
+        ),
     ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -83,10 +86,13 @@ async def test_feed_returns_markets():
 
 @pytest.mark.asyncio
 async def test_feed_respects_limit():
-    with _mock_auth(), patch(
-        "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
-        new_callable=AsyncMock,
-        return_value=MOCK_RAW_MARKETS,
+    with (
+        _mock_auth(),
+        patch(
+            "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
+            new_callable=AsyncMock,
+            return_value=MOCK_RAW_MARKETS,
+        ),
     ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -100,10 +106,13 @@ async def test_feed_respects_limit():
 
 @pytest.mark.asyncio
 async def test_feed_empty_when_adapter_fails():
-    with _mock_auth(), patch(
-        "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
-        new_callable=AsyncMock,
-        return_value=[],
+    with (
+        _mock_auth(),
+        patch(
+            "app.adapters.hyperliquid.HyperliquidAdapter.fetch_markets",
+            new_callable=AsyncMock,
+            return_value=[],
+        ),
     ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -117,10 +126,13 @@ async def test_feed_empty_when_adapter_fails():
 
 @pytest.mark.asyncio
 async def test_odds_returns_market_odds():
-    with _mock_auth(), patch(
-        "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
-        new_callable=AsyncMock,
-        return_value=MOCK_ODDS,
+    with (
+        _mock_auth(),
+        patch(
+            "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
+            new_callable=AsyncMock,
+            return_value=MOCK_ODDS,
+        ),
     ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
@@ -135,10 +147,13 @@ async def test_odds_returns_market_odds():
 
 @pytest.mark.asyncio
 async def test_odds_returns_error_on_failure():
-    with _mock_auth(), patch(
-        "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
-        new_callable=AsyncMock,
-        return_value={"market_id": "mkt-999", "error": "Not found"},
+    with (
+        _mock_auth(),
+        patch(
+            "app.adapters.hyperliquid.HyperliquidAdapter.fetch_market_odds",
+            new_callable=AsyncMock,
+            return_value={"market_id": "mkt-999", "error": "Not found"},
+        ),
     ):
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"

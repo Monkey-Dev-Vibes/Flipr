@@ -9,7 +9,9 @@ from app.ai.curation import _fallback_curate, curate_markets
 from app.models.market import RawMarket
 
 
-def _make_raw(market_id: str = "mkt-001", question: str = "Will Bitcoin hit $150k by end of year?") -> RawMarket:
+def _make_raw(
+    market_id: str = "mkt-001", question: str = "Will Bitcoin hit $150k by end of year?"
+) -> RawMarket:
     return RawMarket(
         id=market_id,
         question=question,
@@ -93,7 +95,10 @@ async def test_curate_markets_success(mock_get_client, mock_settings):
     assert len(result) == 1
     assert result[0].id == "mkt-001"
     assert result[0].headline == "Bitcoin 150k Incoming"
-    assert result[0].description == "Bitcoin might hit $150k. Traders are watching closely."
+    assert (
+        result[0].description
+        == "Bitcoin might hit $150k. Traders are watching closely."
+    )
     assert result[0].yes_price == 28
     assert result[0].category == "Crypto"
 
