@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     # CORS
     frontend_url: str = "http://localhost:3000"
+    frontend_v2_url: str = "http://localhost:3001"
 
     # Anthropic
     anthropic_api_key: str = ""

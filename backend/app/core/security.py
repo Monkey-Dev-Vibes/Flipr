@@ -99,6 +99,10 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    # Debug mode: accept "dev-token" without JWT verification
+    if settings.debug and credentials.credentials == "dev-token":
+        return UserSession(privy_user_id="dev-user-001")
+
     try:
         claims = await verify_privy_token(credentials.credentials)
     except (jwt.PyJWTError, ValueError, httpx.HTTPError) as exc:
