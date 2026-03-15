@@ -11,12 +11,13 @@ import {
 } from "framer-motion";
 import { MarketCard } from "./MarketCard";
 import { useHaptics } from "@/hooks/useHaptics";
+import {
+  SWIPE_THRESHOLD,
+  SKIP_THRESHOLD,
+  ROTATION_FACTOR,
+  EXIT_DISTANCE,
+} from "@/lib/constants";
 import type { Market, MarketOdds, SwipeDirection } from "@/lib/types";
-
-const SWIPE_THRESHOLD = 120; // px to commit a horizontal swipe
-const SKIP_THRESHOLD = -100; // px (negative = upward) to commit a skip
-const ROTATION_FACTOR = 15; // max rotation degrees at full swipe
-const EXIT_DISTANCE = 600; // px — how far the card flies off-screen
 
 function getExitVariant(direction: SwipeDirection) {
   switch (direction) {
@@ -33,14 +34,14 @@ function getExitVariant(direction: SwipeDirection) {
 
 // --- SwipeOverlay: DRY component for directional overlays ---
 
-interface SwipeOverlayProps {
+export interface SwipeOverlayProps {
   opacity: MotionValue<number>;
   color: string;
   label: string;
   labelPosition: string;
 }
 
-function SwipeOverlay({
+export function SwipeOverlay({
   opacity,
   color,
   label,

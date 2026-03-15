@@ -54,9 +54,27 @@ export async function executeTrade(
 }
 
 /**
- * Fetch live odds for a specific market.
- * Used for 3-second polling while the trade panel is open.
+ * Claim the 1 Test USDC onboarding grant.
+ * Called once after the tutorial swipe is completed.
  */
+export async function claimOnboardingGrant(
+  token: string,
+): Promise<{ data: { grant_amount: number; balance: number } | null; error: string | null }> {
+  const response = await fetch(`${API_BASE}/onboarding/grant`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    return { data: null, error: "Failed to claim grant" };
+  }
+
+  return response.json();
+}
+
 export async function fetchMarketOdds(
   marketId: string,
   token: string,

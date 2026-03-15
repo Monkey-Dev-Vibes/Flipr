@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AnimatePresence } from "framer-motion";
 import { CardStack } from "@/components/CardStack";
 import { TradePanel } from "@/components/TradePanel";
@@ -8,6 +9,7 @@ import { TradeResultToast } from "@/components/TradeResultToast";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/providers/AuthProvider";
+import { useOnboarding } from "@/hooks/useOnboarding";
 import { useOddsPolling } from "@/hooks/useOddsPolling";
 import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
@@ -24,10 +26,19 @@ interface TradeState {
 }
 
 export default function Home() {
+  const router = useRouter();
   const { isAuthenticated, isLoading, getAuthToken } = useAuth();
+  const { isOnboardingComplete } = useOnboarding();
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
+
+  // Redirect authenticated but un-onboarded users to onboarding
+  useEffect(() => {
+    if (isAuthenticated && !isOnboardingComplete) {
+      router.replace("/onboarding");
+    }
+  }, [isAuthenticated, isOnboardingComplete, router]);
 
   // Locked price at swipe time (used for slippage comparison)
   const lockedPrice = useMemo(() => {
@@ -131,8 +142,17 @@ export default function Home() {
           <p className="max-w-xs text-center font-sans text-sm text-flipr-card/50">
             Predict. Swipe. Profit. Sign in to start trading.
           </p>
+          <button
+            type="button"
+            onClick={() => router.push("/onboarding")}
+            className="rounded-full bg-flipr-yes px-6 py-2.5 font-sans text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+          >
+            Get Started
+          </button>
           <LoginButton />
         </div>
+      ) : !isOnboardingComplete ? (
+        <div className="font-mono text-sm text-flipr-card/30">Loading…</div>
       ) : (
         <>
           <CardStack markets={mockMarkets} onSwipe={handleSwipe} liveOdds={liveOdds} />

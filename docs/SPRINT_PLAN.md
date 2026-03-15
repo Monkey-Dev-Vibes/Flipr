@@ -121,12 +121,12 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 
 **Goal**: The wordless tutorial and first-time user experience.
 
-- [ ] Build onboarding page with looping background video placeholder
-- [ ] Integrate Privy login screen
-- [ ] Implement "1 Test USDC" grant on account creation
-- [ ] Build dummy swipe tutorial (forced zero-risk trade)
-- [ ] Route new users through onboarding before main feed
-- [ ] Persist onboarding completion state
+- [x] Build onboarding page with looping background video placeholder
+- [x] Integrate Privy login screen
+- [x] Implement "1 Test USDC" grant on account creation
+- [x] Build dummy swipe tutorial (forced zero-risk trade)
+- [x] Route new users through onboarding before main feed
+- [x] Persist onboarding completion state
 
 ---
 
@@ -157,5 +157,5 @@ Each sprint follows: **Build -> Audit -> Fix -> Commit & Push**
 | 6 - Auth & Privy                | **Complete** | `82b6d7c` | Audit 6: 4 issues reviewed, 4 fixes applied    |
 | 7 - Trade Execution             | **Complete** | --        | Audit 7: 3 issues reviewed, 3 fixes applied    |
 | 8 - Odds Polling & Slippage     | **Complete** | --        | Audit 8: 4 issues reviewed, 4 fixes applied    |
-| 9 - Onboarding                  | Pending      | --        | --                                             |
+| 9 - Onboarding                  | **Complete** | --        | Audit 9: 4 issues reviewed, 3 fixes applied    |
 | 10 - Polish & PWA               | Pending      | --        | --                                             |

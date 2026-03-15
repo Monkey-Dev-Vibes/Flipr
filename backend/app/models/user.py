@@ -21,3 +21,10 @@ class AuthVerifyResponse(BaseModel):
     data: Optional[Dict] = None
     error: Optional[str] = None
     meta: Optional[Dict] = None
+
+
+class OnboardingGrantResponse(BaseModel):
+    """API response envelope for onboarding grant."""
+
+    data: Optional[Dict] = None
+    error: Optional[str] = None
