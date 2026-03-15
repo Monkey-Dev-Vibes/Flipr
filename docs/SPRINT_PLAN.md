@@ -137,7 +137,7 @@ Each sprint follows: **Build → Audit → Fix → Commit & Push**
 
 | Sprint | Status | Commit | Audit |
 |---|---|---|---|
-| 1 - Scaffolding & Design System | Pending | — | — |
+| 1 - Scaffolding & Design System | **Complete** | `4362ac8` | Audit 1: 12 issues reviewed, 10 fixes applied |
 | 2 - Card UI & Swipe | Pending | — | — |
 | 3 - Trade Panel & Confirm | Pending | — | — |
 | 4 - Backend Adapters & Feed | Pending | — | — |
