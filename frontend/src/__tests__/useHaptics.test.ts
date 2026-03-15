@@ -68,6 +68,60 @@ describe("useHaptics", () => {
     vi.useRealTimers();
   });
 
+  it("startRampingHold triggers accelerating vibrations", () => {
+    vi.useFakeTimers();
+    const { result } = renderHook(() => useHaptics());
+
+    act(() => result.current.startRampingHold(1500));
+    // First interval is 100ms
+    act(() => vi.advanceTimersByTime(100));
+    expect(vibrateMock).toHaveBeenCalledWith(8);
+
+    act(() => result.current.stopRampingHold());
+    vibrateMock.mockClear();
+    act(() => vi.advanceTimersByTime(500));
+    // No additional calls after stop
+    expect(vibrateMock).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("startRampingHold self-terminates after maxDuration", () => {
+    vi.useFakeTimers();
+    const now = Date.now();
+    vi.spyOn(Date, "now").mockReturnValue(now);
+
+    const { result } = renderHook(() => useHaptics());
+    act(() => result.current.startRampingHold(200));
+
+    // Jump past the max duration
+    vi.spyOn(Date, "now").mockReturnValue(now + 250);
+    act(() => vi.advanceTimersByTime(250));
+
+    vibrateMock.mockClear();
+    act(() => vi.advanceTimersByTime(500));
+    // Should have self-terminated, no more vibrations
+    expect(vibrateMock).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it("cleans up ramping timeout on unmount", () => {
+    vi.useFakeTimers();
+    const { result, unmount } = renderHook(() => useHaptics());
+
+    act(() => result.current.startRampingHold(1500));
+    act(() => vi.advanceTimersByTime(100));
+    expect(vibrateMock).toHaveBeenCalledTimes(1);
+
+    unmount();
+    vibrateMock.mockClear();
+    act(() => vi.advanceTimersByTime(500));
+    expect(vibrateMock).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
   it("does not throw when vibrate is not available", () => {
     // Fully remove vibrate from navigator
     const descriptor = Object.getOwnPropertyDescriptor(navigator, "vibrate");
@@ -83,6 +137,8 @@ describe("useHaptics", () => {
       result.current.heavyImpact();
       result.current.startDragTick();
       result.current.stopDragTick();
+      result.current.startRampingHold(1500);
+      result.current.stopRampingHold();
     });
 
     // Restore for other tests

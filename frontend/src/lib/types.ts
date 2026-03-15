@@ -9,3 +9,10 @@ export interface Market {
 }
 
 export type SwipeDirection = "yes" | "no" | "skip" | null;
+
+export interface TradeConfirmation {
+  marketId: string;
+  intent: "yes" | "no";
+  amount: number;
+  lockedPrice: number;
+}

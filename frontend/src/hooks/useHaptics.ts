@@ -7,9 +7,11 @@ function canVibrate(): boolean {
 }
 
 const TICK_THROTTLE_MS = 16; // ~60fps cap
+const RAMP_INTERVALS = [100, 80, 60, 40, 25, 15]; // accelerating haptic pattern
 
 export function useHaptics() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const rampTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTickRef = useRef(0);
 
   /** Light tick — used during card dragging (throttled to 60fps) */
@@ -47,15 +49,57 @@ export function useHaptics() {
     }
   }, []);
 
-  // Clean up interval on unmount to prevent leaks
+  /** Start ramping haptics for hold-to-confirm (accelerating vibration) */
+  const startRampingHold = useCallback((maxDurationMs: number) => {
+    if (!canVibrate()) return;
+    const startTime = Date.now();
+    let stage = 0;
+
+    const scheduleNext = () => {
+      // Cap recursion at the hold duration (16A)
+      if (Date.now() - startTime > maxDurationMs) return;
+
+      const interval =
+        RAMP_INTERVALS[Math.min(stage, RAMP_INTERVALS.length - 1)];
+      rampTimeoutRef.current = setTimeout(() => {
+        navigator.vibrate(8);
+        stage++;
+        scheduleNext();
+      }, interval);
+    };
+
+    scheduleNext();
+  }, []);
+
+  /** Stop ramping haptics */
+  const stopRampingHold = useCallback(() => {
+    if (rampTimeoutRef.current) {
+      clearTimeout(rampTimeoutRef.current);
+      rampTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Clean up on unmount to prevent leaks
   useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
+      if (rampTimeoutRef.current) {
+        clearTimeout(rampTimeoutRef.current);
+        rampTimeoutRef.current = null;
+      }
     };
   }, []);
 
-  return { tick, thresholdClick, heavyImpact, startDragTick, stopDragTick };
+  return {
+    tick,
+    thresholdClick,
+    heavyImpact,
+    startDragTick,
+    stopDragTick,
+    startRampingHold,
+    stopRampingHold,
+  };
 }
