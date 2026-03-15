@@ -1,25 +1,31 @@
+import asyncio
 import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 
 from app.adapters.base import BaseMarketAdapter
 from app.adapters.hyperliquid import HyperliquidAdapter
-from app.models.market import CuratedMarket, RawMarket
+from app.ai.curation import curate_markets
+from app.models.market import CuratedMarket
 
 logger = logging.getLogger(__name__)
 
+# How often the background cron refreshes markets (seconds)
+CURATION_INTERVAL = 300  # 5 minutes
+
 
 class MarketService:
-    """Service layer for fetching and serving market data.
+    """Service layer for fetching, curating, and serving market data.
 
-    Pre-curation: serves raw markets with question as headline/description.
-    Sprint 5 will add AI curation via Claude.
+    Uses Claude AI to generate punchy headlines and accessible descriptions.
+    Falls back to naive curation when the API key is not configured.
     """
 
     def __init__(self, adapter: Optional[BaseMarketAdapter] = None) -> None:
         self._adapter = adapter or HyperliquidAdapter()
         self._cached_markets: List[CuratedMarket] = []
         self._last_fetched: Optional[datetime] = None
+        self._cron_task: Optional[asyncio.Task] = None
 
     @property
     def adapter(self) -> BaseMarketAdapter:
@@ -35,48 +41,47 @@ class MarketService:
         return await self._adapter.fetch_market_odds(market_id)
 
     async def refresh_markets(self) -> int:
-        """Force refresh markets from the adapter."""
+        """Fetch raw markets and run AI curation pipeline."""
         raw_markets = await self._adapter.fetch_markets()
-        self._cached_markets = [self._raw_to_curated(m) for m in raw_markets]
+        self._cached_markets = await curate_markets(raw_markets)
         self._last_fetched = datetime.now(timezone.utc)
         logger.info("Refreshed %d markets", len(self._cached_markets))
         return len(self._cached_markets)
 
     async def _refresh_if_needed(self) -> None:
-        """Refresh if cache is empty or older than 5 minutes."""
+        """Refresh if cache is empty or older than the curation interval."""
         if self._last_fetched is None:
             await self.refresh_markets()
             return
 
         age = (datetime.now(timezone.utc) - self._last_fetched).total_seconds()
-        if age > 300:  # 5 minutes
+        if age > CURATION_INTERVAL:
             await self.refresh_markets()
 
-    @staticmethod
-    def _raw_to_curated(raw: RawMarket) -> CuratedMarket:
-        """Convert raw market to curated format.
+    def start_cron(self) -> None:
+        """Start the background curation cron job."""
+        if self._cron_task is None:
+            self._cron_task = asyncio.create_task(self._cron_loop())
+            logger.info("Started curation cron (every %ds)", CURATION_INTERVAL)
 
-        Pre-AI curation: uses raw question as both headline and description.
-        Sprint 5 will replace this with Claude-generated content.
-        """
-        # Truncate question to make a headline (first ~6 words)
-        words = raw.question.split()
-        headline = " ".join(words[:6])
-        if len(words) > 6:
-            headline += "..."
+    def stop_cron(self) -> None:
+        """Stop the background curation cron job."""
+        if self._cron_task is not None:
+            self._cron_task.cancel()
+            self._cron_task = None
+            logger.info("Stopped curation cron")
 
-        return CuratedMarket(
-            id=raw.id,
-            question=raw.question,
-            headline=headline,
-            description=raw.question,
-            category=raw.category,
-            yes_price=raw.yes_price,
-            no_price=raw.no_price,
-            volume=raw.volume,
-            expires_at=raw.expires_at,
-            source=raw.source,
-        )
+    async def _cron_loop(self) -> None:
+        """Background loop that refreshes markets every CURATION_INTERVAL."""
+        while True:
+            try:
+                await asyncio.sleep(CURATION_INTERVAL)
+                await self.refresh_markets()
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error("Curation cron error: %s", e)
+                # Continue running — next cycle may succeed
 
 
 # Singleton instance for dependency injection

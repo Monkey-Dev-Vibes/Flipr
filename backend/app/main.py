@@ -14,9 +14,12 @@ from app.services.market_service import get_market_service
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
-    # Shutdown: close the adapter's HTTP client
+    # Startup: begin the 5-minute curation cron job
     service = get_market_service()
+    service.start_cron()
+    yield
+    # Shutdown: stop cron and close the adapter's HTTP client
+    service.stop_cron()
     await service.adapter.close()
 
 
