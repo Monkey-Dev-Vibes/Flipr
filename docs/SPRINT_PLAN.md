@@ -142,7 +142,7 @@ Each sprint follows: **Build → Audit → Fix → Commit & Push**
 | 3 - Trade Panel & Confirm | **Complete** | `76f2ad0` | Audit 3: 16 issues reviewed, 13 fixes applied |
 | 4 - Backend Adapters & Feed | **Complete** | `14e6175` | Audit 4: 4 issues reviewed, 4 fixes applied |
 | 5 - AI Curation | **Complete** | — | Audit 5: 4 issues reviewed, 3 fixes applied |
-| 6 - Auth & Privy | Pending | — | — |
+| 6 - Auth & Privy | **Complete** | `82b6d7c` | Audit 6: 4 issues reviewed, 4 fixes applied |
 | 7 - Trade Execution | Pending | — | — |
 | 8 - Odds Polling & Slippage | Pending | — | — |
 | 9 - Onboarding | Pending | — | — |
