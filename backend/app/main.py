@@ -1,15 +1,35 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
-from app.core.config import APP_VERSION, settings
 from app.api.health import router as health_router
+from app.api.markets import router as markets_router
+from app.core.config import APP_VERSION, settings
+from app.core.rate_limit import limiter
+from app.services.market_service import get_market_service
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    # Shutdown: close the adapter's HTTP client
+    service = get_market_service()
+    await service.adapter.close()
+
 
 app = FastAPI(
     title=settings.app_name,
     version=APP_VERSION,
     docs_url="/docs" if settings.debug else None,
     redoc_url=None,
+    lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,3 +40,4 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(markets_router)
