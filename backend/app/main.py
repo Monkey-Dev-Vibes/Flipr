@@ -10,6 +10,8 @@ from app.api.health import router as health_router
 from app.api.markets import router as markets_router
 from app.api.onboarding import router as onboarding_router
 from app.api.trades import router as trades_router
+from app.api.users import router as users_router
+from app.api.ws import router as ws_router
 from app.core.config import APP_VERSION, settings
 from app.core.rate_limit import limiter
 from app.services.market_service import get_market_service
@@ -50,3 +52,5 @@ app.include_router(health_router)
 app.include_router(markets_router)
 app.include_router(onboarding_router)
 app.include_router(trades_router)
+app.include_router(users_router)
+app.include_router(ws_router)

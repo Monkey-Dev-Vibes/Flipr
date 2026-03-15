@@ -5,6 +5,7 @@ from app.core.security import get_current_user
 from app.models.market import TradeExecuteResponse, TradeRequest
 from app.models.user import UserSession
 from app.services.trade_service import get_trade_service
+from app.services.user_state_service import get_user_state_service
 
 router = APIRouter(prefix="/trade", tags=["trade"])
 
@@ -24,6 +25,10 @@ async def execute_trade(
     """
     service = get_trade_service()
     result = await service.execute_trade(trade)
+
+    # Record trade outcome for cooling-off tracking
+    user_state_service = get_user_state_service()
+    user_state_service.record_trade_result(user.privy_user_id, result.success)
 
     if not result.success:
         return TradeExecuteResponse(data=result, error=result.error)

@@ -28,3 +28,10 @@ class OnboardingGrantResponse(BaseModel):
 
     data: Optional[Dict] = None
     error: Optional[str] = None
+
+
+class UserStateResponse(BaseModel):
+    """API response envelope for user state."""
+
+    data: Optional[Dict] = None
+    error: Optional[str] = None
