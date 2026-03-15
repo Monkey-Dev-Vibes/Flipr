@@ -42,14 +42,14 @@ describe("TradeResultToast", () => {
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
-  it("auto-dismisses after 4 seconds", () => {
+  it("auto-dismisses after 5 seconds", () => {
     vi.useFakeTimers();
     const onDismiss = vi.fn();
     render(<TradeResultToast result={successResult} onDismiss={onDismiss} />);
 
     expect(onDismiss).not.toHaveBeenCalled();
     act(() => {
-      vi.advanceTimersByTime(4000);
+      vi.advanceTimersByTime(5000);
     });
     expect(onDismiss).toHaveBeenCalledOnce();
     vi.useRealTimers();

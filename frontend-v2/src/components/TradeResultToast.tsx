@@ -7,11 +7,12 @@ import type { TradeResult } from "@/lib/types";
 interface TradeResultToastProps {
   result: TradeResult;
   onDismiss: () => void;
+  onShare?: () => void;
 }
 
-const AUTO_DISMISS_MS = 4000;
+const AUTO_DISMISS_MS = 5000;
 
-export function TradeResultToast({ result, onDismiss }: TradeResultToastProps) {
+export function TradeResultToast({ result, onDismiss, onShare }: TradeResultToastProps) {
   useEffect(() => {
     const timer = setTimeout(onDismiss, AUTO_DISMISS_MS);
     return () => clearTimeout(timer);
@@ -28,7 +29,6 @@ export function TradeResultToast({ result, onDismiss }: TradeResultToastProps) {
       exit={{ y: -80, opacity: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className={`fixed left-4 right-4 top-safe-top z-[60] mt-2 rounded-2xl ${bgColor} px-5 py-4 shadow-lg`}
-      onClick={onDismiss}
       role="alert"
     >
       <div className="flex items-start gap-3">
@@ -50,6 +50,31 @@ export function TradeResultToast({ result, onDismiss }: TradeResultToastProps) {
               {result.error || "Unknown error"}
             </p>
           )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          {isSuccess && onShare && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+              className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white transition-all active:scale-95"
+              aria-label="Share trade result"
+            >
+              Share
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-white/60 transition-colors hover:text-white"
+            aria-label="Dismiss"
+          >
+            ✕
+          </button>
         </div>
       </div>
     </motion.div>

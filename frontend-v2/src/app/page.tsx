@@ -22,6 +22,7 @@ import { useUserState } from "@/hooks/useUserState";
 import { useWinStreak } from "@/hooks/useWinStreak";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useMilestones } from "@/hooks/useMilestones";
+import { useShareCard } from "@/hooks/useShareCard";
 import { executeTrade } from "@/lib/api";
 import type { Market, TradeConfirmation, TradeResult } from "@/lib/types";
 
@@ -50,6 +51,7 @@ export default function HomePage() {
     recordTrade: recordMilestone,
     dismissMilestone,
   } = useMilestones();
+  const { share: shareCard } = useShareCard();
   const [trade, setTrade] = useState<TradeState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
@@ -225,6 +227,24 @@ export default function HomePage() {
             key={tradeResult.market_id + tradeResult.intent}
             result={tradeResult}
             onDismiss={() => setTradeResult(null)}
+            onShare={() => {
+              if (tradeResult.success) {
+                const gain = tradeResult.executed_price
+                  ? tradeResult.executed_price - 50
+                  : 0;
+                shareCard(
+                  {
+                    type: "trade-win",
+                    question: tradeResult.market_id,
+                    intent: tradeResult.intent as "yes" | "no",
+                    percentGain: gain,
+                    amount: tradeResult.amount,
+                    winStreak: currentStreak,
+                  },
+                  getAuthToken,
+                );
+              }
+            }}
           />
         )}
       </AnimatePresence>
