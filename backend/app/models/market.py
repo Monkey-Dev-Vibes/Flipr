@@ -12,8 +12,12 @@ class RawMarket(BaseModel):
     id: str
     question: str
     category: str
-    yes_price: float = Field(ge=0, le=100, description="YES outcome price in cents (0-100)")
-    no_price: float = Field(ge=0, le=100, description="NO outcome price in cents (0-100)")
+    yes_price: float = Field(
+        ge=0, le=100, description="YES outcome price in cents (0-100)"
+    )
+    no_price: float = Field(
+        ge=0, le=100, description="NO outcome price in cents (0-100)"
+    )
     volume: float = Field(ge=0, description="Total volume in USD")
     expires_at: datetime
     source: str = Field(description="Protocol source (e.g., 'hyperliquid')")
@@ -24,8 +28,12 @@ class CuratedMarket(BaseModel):
 
     id: str
     question: str
-    headline: str = Field(max_length=60, description="AI-curated punchy headline (max 6 words)")
-    description: str = Field(description="AI-curated accessible description (max 2 sentences)")
+    headline: str = Field(
+        max_length=60, description="AI-curated punchy headline (max 6 words)"
+    )
+    description: str = Field(
+        description="AI-curated accessible description (max 2 sentences)"
+    )
     category: str
     yes_price: float = Field(ge=0, le=100)
     no_price: float = Field(ge=0, le=100)
@@ -67,5 +75,13 @@ class MarketOddsResponse(BaseModel):
     """API response envelope for single market odds."""
 
     data: Optional[Dict] = None
+    error: Optional[str] = None
+    meta: Optional[Dict] = None
+
+
+class TradeExecuteResponse(BaseModel):
+    """API response envelope for trade execution."""
+
+    data: Optional[TradeResult] = None
     error: Optional[str] = None
     meta: Optional[Dict] = None

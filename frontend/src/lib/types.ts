@@ -16,3 +16,19 @@ export interface TradeConfirmation {
   amount: number;
   lockedPrice: number;
 }
+
+export interface TradeResult {
+  success: boolean;
+  market_id: string;
+  intent: string;
+  amount: number;
+  executed_price: number | null;
+  fee: number | null;
+  error: string | null;
+}
+
+export interface TradeExecuteResponse {
+  data: TradeResult | null;
+  error: string | null;
+  meta: { fee: number; total_charge: number } | null;
+}

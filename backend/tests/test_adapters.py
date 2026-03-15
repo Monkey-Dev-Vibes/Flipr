@@ -1,4 +1,6 @@
+from unittest.mock import AsyncMock, patch
 
+import httpx
 import pytest
 
 from app.adapters.base import BaseMarketAdapter
@@ -90,19 +92,105 @@ def test_parse_market_missing_question_returns_none():
     assert adapter._parse_market(item) is None
 
 
-# --- Trade execution placeholder test ---
+# --- Trade execution tests ---
+
+
+def _make_trade(market_id="mkt-1", intent="yes", amount=10.0, locked_price=65.0):
+    return TradeRequest(
+        market_id=market_id, intent=intent, amount=amount, locked_price=locked_price
+    )
+
+
+def _mock_exchange_response(json_data, status_code=200):
+    """Create a mock httpx.Response for the exchange API."""
+    return httpx.Response(
+        status_code=status_code,
+        json=json_data,
+        request=httpx.Request("POST", "https://test/exchange"),
+    )
 
 
 @pytest.mark.asyncio
-async def test_execute_trade_returns_not_implemented():
+async def test_execute_trade_filled():
+    """Successful fill returns TradeResult with executed price."""
     adapter = HyperliquidAdapter()
-    trade = TradeRequest(
-        market_id="mkt-1",
-        intent="yes",
-        amount=10.0,
-        locked_price=65.0,
+    mock_response = _mock_exchange_response(
+        {
+            "status": "ok",
+            "response": {"data": {"statuses": [{"filled": {"avgPx": "0.64"}}]}},
+        }
     )
-    result = await adapter.execute_trade(trade)
+    with patch.object(
+        adapter._client, "post", new_callable=AsyncMock, return_value=mock_response
+    ):
+        result = await adapter.execute_trade(_make_trade())
+
     assert isinstance(result, TradeResult)
+    assert result.success is True
+    assert result.executed_price == 64.0
+    assert result.market_id == "mkt-1"
+
+
+@pytest.mark.asyncio
+async def test_execute_trade_exchange_error():
+    """Exchange returns an error status in the order response."""
+    adapter = HyperliquidAdapter()
+    mock_response = _mock_exchange_response(
+        {
+            "status": "ok",
+            "response": {"data": {"statuses": [{"error": "Insufficient margin"}]}},
+        }
+    )
+    with patch.object(
+        adapter._client, "post", new_callable=AsyncMock, return_value=mock_response
+    ):
+        result = await adapter.execute_trade(_make_trade())
+
     assert result.success is False
-    assert "Sprint 7" in result.error
+    assert result.error == "Insufficient margin"
+
+
+@pytest.mark.asyncio
+async def test_execute_trade_fok_not_filled():
+    """FOK order not filled returns clean failure."""
+    adapter = HyperliquidAdapter()
+    mock_response = _mock_exchange_response(
+        {
+            "status": "err",
+            "response": {"error": "No liquidity at requested price"},
+        }
+    )
+    with patch.object(
+        adapter._client, "post", new_callable=AsyncMock, return_value=mock_response
+    ):
+        result = await adapter.execute_trade(_make_trade())
+
+    assert result.success is False
+    assert "liquidity" in result.error.lower()
+
+
+@pytest.mark.asyncio
+async def test_execute_trade_timeout():
+    """Timeout during trade returns user-friendly error."""
+    adapter = HyperliquidAdapter()
+    with patch.object(
+        adapter._client,
+        "post",
+        new_callable=AsyncMock,
+        side_effect=httpx.ReadTimeout("timed out"),
+    ):
+        result = await adapter.execute_trade(_make_trade())
+
+    assert result.success is False
+    assert "timed out" in result.error.lower()
+
+
+@pytest.mark.asyncio
+async def test_execute_trade_zero_price():
+    """Trade with locked_price=0 returns error without HTTP call."""
+    adapter = HyperliquidAdapter()
+    trade = _make_trade(locked_price=0)
+    result = await adapter.execute_trade(trade)
+
+    assert result.success is False
+    assert "invalid" in result.error.lower()

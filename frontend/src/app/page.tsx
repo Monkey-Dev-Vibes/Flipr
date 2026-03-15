@@ -4,11 +4,18 @@ import { useCallback, useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import { CardStack } from "@/components/CardStack";
 import { TradePanel } from "@/components/TradePanel";
+import { TradeResultToast } from "@/components/TradeResultToast";
 import { LoginButton } from "@/components/LoginButton";
 import { UserMenu } from "@/components/UserMenu";
 import { useAuth } from "@/providers/AuthProvider";
+import { executeTrade } from "@/lib/api";
 import { mockMarkets } from "@/lib/mock-markets";
-import type { Market, SwipeDirection, TradeConfirmation } from "@/lib/types";
+import type {
+  Market,
+  SwipeDirection,
+  TradeConfirmation,
+  TradeResult,
+} from "@/lib/types";
 
 interface TradeState {
   market: Market;
@@ -16,8 +23,10 @@ interface TradeState {
 }
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, getAuthToken } = useAuth();
   const [trade, setTrade] = useState<TradeState | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tradeResult, setTradeResult] = useState<TradeResult | null>(null);
 
   const handleSwipe = useCallback(
     (market: Market, direction: SwipeDirection) => {
@@ -30,16 +39,59 @@ export default function Home() {
   );
 
   const handleClosePanel = useCallback(() => {
-    setTrade(null);
-  }, []);
+    if (!isSubmitting) setTrade(null);
+  }, [isSubmitting]);
 
   const handleConfirmTrade = useCallback(
-    (tradeData: TradeConfirmation) => {
-      // Sprint 7 will wire this to POST /trade/execute
-      console.log("[Flipr] Trade confirmed:", tradeData);
-      setTrade(null);
+    async (tradeData: TradeConfirmation) => {
+      setIsSubmitting(true);
+      try {
+        const token = await getAuthToken();
+        if (!token) {
+          setTradeResult({
+            success: false,
+            market_id: tradeData.marketId,
+            intent: tradeData.intent,
+            amount: tradeData.amount,
+            executed_price: null,
+            fee: null,
+            error: "Session expired. Please sign in again.",
+          });
+          setTrade(null);
+          return;
+        }
+
+        const response = await executeTrade(tradeData, token);
+
+        if (response.error && !response.data) {
+          setTradeResult({
+            success: false,
+            market_id: tradeData.marketId,
+            intent: tradeData.intent,
+            amount: tradeData.amount,
+            executed_price: null,
+            fee: null,
+            error: response.error,
+          });
+        } else if (response.data) {
+          setTradeResult(response.data);
+        }
+      } catch {
+        setTradeResult({
+          success: false,
+          market_id: tradeData.marketId,
+          intent: tradeData.intent,
+          amount: tradeData.amount,
+          executed_price: null,
+          fee: null,
+          error: "Network error. Please check your connection.",
+        });
+      } finally {
+        setIsSubmitting(false);
+        setTrade(null);
+      }
     },
-    [],
+    [getAuthToken],
   );
 
   return (
@@ -81,6 +133,18 @@ export default function Home() {
             intent={trade.intent}
             onClose={handleClosePanel}
             onConfirm={handleConfirmTrade}
+            isSubmitting={isSubmitting}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Trade result toast */}
+      <AnimatePresence>
+        {tradeResult && (
+          <TradeResultToast
+            key={tradeResult.market_id + tradeResult.intent}
+            result={tradeResult}
+            onDismiss={() => setTradeResult(null)}
           />
         )}
       </AnimatePresence>

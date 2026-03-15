@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 # Hyperliquid HIP-4 API endpoints
 MAINNET_INFO_URL = "https://api.hyperliquid.xyz/info"
 TESTNET_INFO_URL = "https://api.hyperliquid-testnet.xyz/info"
+MAINNET_EXCHANGE_URL = "https://api.hyperliquid.xyz/exchange"
+TESTNET_EXCHANGE_URL = "https://api.hyperliquid-testnet.xyz/exchange"
 
 # Category mapping for common market topics
 CATEGORY_KEYWORDS = {
@@ -64,7 +66,11 @@ class HyperliquidAdapter(BaseMarketAdapter):
     """Adapter for Hyperliquid HIP-4 prediction markets."""
 
     def __init__(self) -> None:
-        self._base_url = TESTNET_INFO_URL if settings.hyperliquid_testnet else MAINNET_INFO_URL
+        is_testnet = settings.hyperliquid_testnet
+        self._base_url = TESTNET_INFO_URL if is_testnet else MAINNET_INFO_URL
+        self._exchange_url = (
+            TESTNET_EXCHANGE_URL if is_testnet else MAINNET_EXCHANGE_URL
+        )
         self._client = httpx.AsyncClient(timeout=10.0)
 
     @property
@@ -89,7 +95,11 @@ class HyperliquidAdapter(BaseMarketAdapter):
             return []
 
         markets: List[RawMarket] = []
-        raw_markets = data if isinstance(data, list) else data.get("markets", data.get("data", []))
+        raw_markets = (
+            data
+            if isinstance(data, list)
+            else data.get("markets", data.get("data", []))
+        )
 
         for item in raw_markets:
             try:
@@ -128,19 +138,100 @@ class HyperliquidAdapter(BaseMarketAdapter):
         }
 
     async def execute_trade(self, trade: TradeRequest) -> TradeResult:
-        """Execute a FOK trade on Hyperliquid.
+        """Execute a Fill-Or-Kill (FOK) trade on Hyperliquid HIP-4.
 
-        Note: Full trade execution will be implemented in Sprint 7.
-        This placeholder validates the interface contract.
+        Submits an order to the Hyperliquid exchange API with FOK time-in-force
+        so the trade either fills completely at the locked price or fails cleanly.
         """
-        # Sprint 7 will implement signed L1 transaction routing
+        # Build the FOK order payload for HIP-4 prediction markets
+        is_buy = trade.intent == "yes"
+        # Price in decimal form (e.g., 65 cents → 0.65)
+        limit_price = round(trade.locked_price / 100, 4)
+        # Quantity in contracts (amount / price gives number of contracts)
+        size = round(trade.amount / limit_price, 4) if limit_price > 0 else 0
+
+        if size <= 0:
+            return self._fail_result(
+                trade, "Invalid trade size. Price too low to calculate position."
+            )
+
+        order_payload = {
+            "type": "order",
+            "orders": [
+                {
+                    "marketId": trade.market_id,
+                    "isBuy": is_buy,
+                    "limitPx": str(limit_price),
+                    "sz": str(size),
+                    "orderType": {"limit": {"tif": "FrontendMarket"}},
+                    "reduceOnly": False,
+                }
+            ],
+            "grouping": "na",
+        }
+
+        try:
+            response = await self._client.post(
+                self._exchange_url,
+                json={"action": order_payload, "nonce": self._generate_nonce()},
+            )
+            response.raise_for_status()
+            data = response.json()
+        except httpx.TimeoutException:
+            logger.error("Trade timed out for market %s", trade.market_id)
+            return self._fail_result(
+                trade, "Trade request timed out. Please try again."
+            )
+        except httpx.HTTPStatusError as e:
+            logger.error("Trade HTTP error for market %s: %s", trade.market_id, e)
+            return self._fail_result(
+                trade, "Exchange returned an error. Please try again."
+            )
+        except httpx.HTTPError as e:
+            logger.error("Trade network error for market %s: %s", trade.market_id, e)
+            return self._fail_result(
+                trade, "Network error during trade. Please try again."
+            )
+
+        # Parse exchange response
+        status = data.get("status", "")
+        statuses = data.get("response", {}).get("data", {}).get("statuses", [])
+
+        if status == "ok" and statuses:
+            first = statuses[0]
+            if "filled" in first:
+                filled = first["filled"]
+                return TradeResult(
+                    success=True,
+                    market_id=trade.market_id,
+                    intent=trade.intent,
+                    amount=trade.amount,
+                    executed_price=float(filled.get("avgPx", limit_price)) * 100,
+                )
+            elif "error" in first:
+                return self._fail_result(trade, first["error"])
+
+        # FOK not filled — trade failed cleanly
+        error_msg = data.get("response", {}).get(
+            "error", "Order not filled (FOK). Price may have moved."
+        )
+        return self._fail_result(trade, error_msg)
+
+    @staticmethod
+    def _fail_result(trade: TradeRequest, error: str) -> TradeResult:
+        """Build a failure TradeResult from a trade request and error message."""
         return TradeResult(
             success=False,
             market_id=trade.market_id,
             intent=trade.intent,
             amount=trade.amount,
-            error="Trade execution not yet implemented (Sprint 7)",
+            error=error,
         )
+
+    @staticmethod
+    def _generate_nonce() -> int:
+        """Generate a millisecond timestamp nonce for the exchange API."""
+        return int(datetime.now(timezone.utc).timestamp() * 1000)
 
     def _parse_market(self, item: dict) -> Optional[RawMarket]:
         """Parse a raw Hyperliquid market entry into a RawMarket model."""
@@ -161,7 +252,9 @@ class HyperliquidAdapter(BaseMarketAdapter):
         no_price = no_raw * 100 if is_decimal else no_raw
 
         volume = float(item.get("volume", item.get("totalVolume", 0)))
-        expires_str = item.get("expiresAt") or item.get("expires_at") or item.get("endDate")
+        expires_str = (
+            item.get("expiresAt") or item.get("expires_at") or item.get("endDate")
+        )
         expires_at = (
             datetime.fromisoformat(expires_str.replace("Z", "+00:00"))
             if expires_str

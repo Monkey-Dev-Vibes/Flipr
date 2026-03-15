@@ -14,6 +14,8 @@ interface TradePanelProps {
   onConfirm: (trade: TradeConfirmation) => void;
   /** Set when odds have shifted >5% — placeholder for Sprint 8 polling */
   slippageDetected?: { originalOdds: number; currentOdds: number } | null;
+  /** True while the trade is being submitted to the backend */
+  isSubmitting?: boolean;
 }
 
 const DEFAULT_BET = 10;
@@ -24,6 +26,7 @@ export function TradePanel({
   onClose,
   onConfirm,
   slippageDetected = null,
+  isSubmitting = false,
 }: TradePanelProps) {
   const [betAmount, setBetAmount] = useState(DEFAULT_BET);
   const [slippageAcknowledged, setSlippageAcknowledged] = useState(false);
@@ -149,8 +152,15 @@ export function TradePanel({
           <HoldToConfirm
             intent={intent}
             onConfirm={handleConfirm}
-            disabled={!!hasSlippage}
+            disabled={!!hasSlippage || isSubmitting}
           />
+
+          {/* Submitting indicator */}
+          {isSubmitting && (
+            <p className="text-center text-xs font-medium text-flipr-ink/50">
+              Executing trade…
+            </p>
+          )}
 
           {/* Fee disclosure */}
           <p className="text-center text-xs text-flipr-ink/30">

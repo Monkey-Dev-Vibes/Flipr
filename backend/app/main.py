@@ -8,6 +8,7 @@ from slowapi.errors import RateLimitExceeded
 from app.api.auth import router as auth_router
 from app.api.health import router as health_router
 from app.api.markets import router as markets_router
+from app.api.trades import router as trades_router
 from app.core.config import APP_VERSION, settings
 from app.core.rate_limit import limiter
 from app.services.market_service import get_market_service
@@ -46,3 +47,4 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(markets_router)
+app.include_router(trades_router)
