@@ -1,7 +1,9 @@
 import logging
+import random
 from typing import Optional
 
 from app.adapters.base import BaseMarketAdapter
+from app.core.config import settings
 from app.models.market import TradeRequest, TradeResult
 
 logger = logging.getLogger(__name__)
@@ -32,6 +34,10 @@ class TradeService:
         3. Execute FOK order via adapter
         4. Apply platform fee on success
         """
+        # Debug mode: simulate trades with mock results
+        if settings.debug:
+            return self._mock_execute(trade)
+
         # 1. Pre-trade slippage check
         try:
             current_odds = await self._adapter.fetch_market_odds(trade.market_id)
@@ -99,6 +105,34 @@ class TradeService:
             )
 
         return result
+
+    @staticmethod
+    def _mock_execute(trade: TradeRequest) -> TradeResult:
+        """Simulate a trade in debug mode. ~80% success rate."""
+        succeeds = random.random() < 0.8
+        if succeeds:
+            executed_price = trade.locked_price + random.uniform(-2, 2)
+            logger.info(
+                "[MOCK] Trade executed: market=%s intent=%s amount=$%.2f",
+                trade.market_id, trade.intent, trade.amount,
+            )
+            return TradeResult(
+                success=True,
+                market_id=trade.market_id,
+                intent=trade.intent,
+                amount=trade.amount,
+                executed_price=round(executed_price, 1),
+                fee=PLATFORM_FEE,
+            )
+        else:
+            logger.info("[MOCK] Trade failed: market=%s", trade.market_id)
+            return TradeResult(
+                success=False,
+                market_id=trade.market_id,
+                intent=trade.intent,
+                amount=trade.amount,
+                error="[Mock] Insufficient liquidity. Try again.",
+            )
 
 
 # Singleton instance
