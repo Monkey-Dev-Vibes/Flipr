@@ -1,0 +1,65 @@
+// IMPORTANT: Bump this version string whenever you change this file
+// or cached assets. Failure to bump = users get stale content.
+const CACHE_NAME = "flipr-v1";
+const OFFLINE_URL = "/offline";
+
+// Assets to cache on install
+const PRECACHE_ASSETS = ["/", "/offline"];
+
+// Paths that should NEVER be cached (live data, API responses)
+const NO_CACHE_PATTERNS = ["/api/", "/markets/", "/trade/", "/auth/"];
+
+function shouldCache(url) {
+  const path = new URL(url).pathname;
+  return !NO_CACHE_PATTERNS.some((pattern) => path.includes(pattern));
+}
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_ASSETS))
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", (event) => {
+  // Only handle GET requests
+  if (event.request.method !== "GET") return;
+
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Only cache static assets, never API/live data responses
+        if (response.ok && shouldCache(event.request.url)) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        // Serve from cache on network failure
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          // Fallback to offline page for navigation requests
+          if (event.request.mode === "navigate") {
+            return caches.match(OFFLINE_URL);
+          }
+          return new Response("Offline", { status: 503 });
+        });
+      })
+  );
+});

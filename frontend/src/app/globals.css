@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Flipr Core Palette */
+  --color-flipr-dark: #1A1A1A;
+  --color-flipr-card: #FFFEFD;
+  --color-flipr-yes: #025656;
+  --color-flipr-no: #D45847;
+  --color-flipr-ink: #2D3748;
+
+  /* Font families */
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Roboto Mono", monospace;
+
+  /* Shadows */
+  --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+  --shadow-panel: 0 -10px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* Base styles */
+body {
+  background: var(--color-flipr-dark);
+  color: var(--color-flipr-card);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-y;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* PWA: Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* PWA: Prevent pull-to-refresh */
+html {
+  overscroll-behavior: none;
+}
+
+/* Page-level scroll lock — apply to swipe views, not globally */
+.overflow-locked {
+  overflow: hidden;
+}
