@@ -140,7 +140,7 @@ Each sprint follows: **Build → Audit → Fix → Commit & Push**
 | 1 - Scaffolding & Design System | **Complete** | `4362ac8` | Audit 1: 12 issues reviewed, 10 fixes applied |
 | 2 - Card UI & Swipe | **Complete** | `ecde3fd` | Audit 2: 16 issues reviewed, 12 fixes applied |
 | 3 - Trade Panel & Confirm | **Complete** | `76f2ad0` | Audit 3: 16 issues reviewed, 13 fixes applied |
-| 4 - Backend Adapters & Feed | Pending | — | — |
+| 4 - Backend Adapters & Feed | **Complete** | `14e6175` | Audit 4: 4 issues reviewed, 4 fixes applied |
 | 5 - AI Curation | Pending | — | — |
 | 6 - Auth & Privy | Pending | — | — |
 | 7 - Trade Execution | Pending | — | — |
